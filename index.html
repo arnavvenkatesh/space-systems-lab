@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Space Systems Lab</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="nav-logo">SSL<span class="dot">.</span></div>
+    <ul class="nav-links">
+      <li><a href="index.html" class="active">Home</a></li>
+      <li><a href="modules.html">Modules</a></li>
+      <li><a href="learn.html">Learn</a></li>
+      <li><a href="workshops.html">Workshops</a></li>
+      <li><a href="impact.html">Impact</a></li>
+      <li><a href="https://github.com" target="_blank" class="github-btn">GitHub ↗</a></li>
+    </ul>
+    <button class="hamburger" onclick="toggleMenu()">☰</button>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-grid-overlay"></div>
+    <div class="hero-content">
+      <span class="hero-tag">Open Source · Free · For Everyone</span>
+      <h1>Space Systems<br><span class="accent">Lab</span></h1>
+      <p class="hero-sub">Learn spacecraft control and design from the ground up. No aerospace degree required.</p>
+      <div class="hero-cta">
+        <a href="modules.html" class="btn-primary">Start Learning →</a>
+        <a href="#about" class="btn-ghost">What is SSL?</a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="orbit-ring ring-1"></div>
+      <div class="orbit-ring ring-2"></div>
+      <div class="orbit-ring ring-3"></div>
+      <div class="satellite">🛰️</div>
+    </div>
+  </section>
+
+  <!-- ABOUT SECTION -->
+  <section class="about-section" id="about">
+    <div class="container">
+
+      <div class="section-label">01 — About</div>
+      <h2>What is Space Systems Lab?</h2>
+      <p class="section-intro">Space Systems Lab is an open-source educational platform designed to make spacecraft engineering accessible to students, educators, and curious minds worldwide.</p>
+
+      <div class="cards-row">
+        <div class="card">
+          <div class="card-icon">🛸</div>
+          <h3>What We Do</h3>
+          <p>[Placeholder] We provide structured, hands-on modules covering orbital mechanics, attitude control, and CubeSat systems — bridging the gap between classroom theory and real mission design.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">🎯</div>
+          <h3>Why Learn Spacecraft Design?</h3>
+          <p>[Placeholder] Space is no longer just for superpowers. CubeSats are built by universities. Private companies launch monthly. Understanding spacecraft design is a skill for the next generation of engineers.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">👩‍🚀</div>
+          <h3>Who Is This For?</h3>
+          <p>[Placeholder] High school and undergrad students curious about aerospace. Teachers looking for STEM resources. Self-taught engineers. Anyone who has ever looked up and wondered how those things stay up there.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- MODULES PREVIEW -->
+  <section class="modules-preview">
+    <div class="container">
+      <div class="section-label">02 — Curriculum</div>
+      <h2>Four Modules. One Mission.</h2>
+      <div class="modules-grid">
+        <a href="modules.html" class="module-card">
+          <span class="module-num">01</span>
+          <h3>Orbital Mechanics</h3>
+          <p>[Placeholder] Understand how objects move in space — Kepler's laws, orbital transfers, and beyond.</p>
+        </a>
+        <a href="modules.html" class="module-card">
+          <span class="module-num">02</span>
+          <h3>Attitude Control</h3>
+          <p>[Placeholder] Learn how satellites orient themselves using reaction wheels, magnetorquers, and thrusters.</p>
+        </a>
+        <a href="modules.html" class="module-card">
+          <span class="module-num">03</span>
+          <h3>CubeSat Systems</h3>
+          <p>[Placeholder] Explore the architecture of small satellites — power, comms, thermal, and structure.</p>
+        </a>
+        <a href="modules.html" class="module-card highlight-card">
+          <span class="module-num">04</span>
+          <h3>Mission Design</h3>
+          <p>[Placeholder] Put it all together — define objectives, select orbits, and design a complete spacecraft mission.</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container footer-inner">
+      <div class="footer-logo">SSL<span class="dot">.</span></div>
+      <p>Open source spacecraft education. Built for the next generation.</p>
+      <div class="footer-links">
+        <a href="index.html">Home</a>
+        <a href="modules.html">Modules</a>
+        <a href="learn.html">Learn</a>
+        <a href="workshops.html">Workshops</a>
+        <a href="impact.html">Impact</a>
+        <a href="https://github.com" target="_blank">GitHub ↗</a>
+      </div>
+      <p class="footer-copy">© 2025 Space Systems Lab — Open Source</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

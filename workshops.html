@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Workshops — Space Systems Lab</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="nav-logo">SSL<span class="dot">.</span></div>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="modules.html">Modules</a></li>
+      <li><a href="learn.html">Learn</a></li>
+      <li><a href="workshops.html" class="active">Workshops</a></li>
+      <li><a href="impact.html">Impact</a></li>
+      <li><a href="https://github.com" target="_blank" class="github-btn">GitHub ↗</a></li>
+    </ul>
+    <button class="hamburger" onclick="toggleMenu()">☰</button>
+  </nav>
+
+  <div class="page-header">
+    <div class="container">
+      <div class="section-label">Live Learning</div>
+      <h1>Workshops</h1>
+      <p>Hands-on sessions led by engineers and educators. Free to attend.</p>
+    </div>
+  </div>
+
+  <section class="page-content">
+    <div class="container">
+
+      <!-- SIGN UP FORM -->
+      <div class="form-section">
+        <div class="section-label">Register</div>
+        <h2>Sign Up for the Next Workshop</h2>
+        <p>[Placeholder] Our next workshop on <strong>Attitude Control Systems</strong> is scheduled for <strong>March 15, 2025</strong>. Spots are limited — register below.</p>
+
+        <form class="signup-form" onsubmit="handleFormSubmit(event)">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="name">Full Name</label>
+              <input type="text" id="name" placeholder="Your name" required>
+            </div>
+            <div class="form-group">
+              <label for="email">Email Address</label>
+              <input type="email" id="email" placeholder="you@example.com" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="school">School / Institution</label>
+              <input type="text" id="school" placeholder="Your school or organization">
+            </div>
+            <div class="form-group">
+              <label for="level">Experience Level</label>
+              <select id="level">
+                <option value="">Select level</option>
+                <option>Complete Beginner</option>
+                <option>Some Physics Background</option>
+                <option>Engineering Student</option>
+                <option>Professional</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="why">Why do you want to attend? (optional)</label>
+            <textarea id="why" rows="3" placeholder="Tell us a bit about your interest in spacecraft engineering..."></textarea>
+          </div>
+          <button type="submit" class="btn-primary">Register for Workshop →</button>
+          <p id="form-message" style="display:none; margin-top:1rem; color: var(--accent);"></p>
+        </form>
+      </div>
+
+      <!-- PAST SESSIONS -->
+      <div class="past-sessions">
+        <div class="section-label">Archive</div>
+        <h2>Past Sessions</h2>
+        <div class="sessions-list">
+          <div class="session-card">
+            <span class="session-date">Jan 20, 2025</span>
+            <div class="session-info">
+              <h3>Introduction to Orbital Mechanics</h3>
+              <p>[Placeholder] 45 students attended. Covered Kepler's laws, orbit types, and a live MATLAB demo of Hohmann transfers. Recording available soon.</p>
+            </div>
+            <span class="session-tag">45 attendees</span>
+          </div>
+          <div class="session-card">
+            <span class="session-date">Dec 5, 2024</span>
+            <div class="session-info">
+              <h3>CubeSat Design Challenge</h3>
+              <p>[Placeholder] 30 students in teams of 3 designed a hypothetical 1U CubeSat mission. Teams presented their trade studies at the end. Hugely popular.</p>
+            </div>
+            <span class="session-tag">30 attendees</span>
+          </div>
+          <div class="session-card">
+            <span class="session-date">Oct 12, 2024</span>
+            <div class="session-info">
+              <h3>Kickoff: What is Space Systems Lab?</h3>
+              <p>[Placeholder] Our inaugural workshop. 60 students joined from 8 different schools. Introduction to the platform and roadmap for the year.</p>
+            </div>
+            <span class="session-tag">60 attendees</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- IMPACT METRICS PREVIEW -->
+      <div class="impact-preview">
+        <div class="section-label">Impact</div>
+        <h2>Workshop Impact So Far</h2>
+        <div class="metrics-row">
+          <div class="metric-box">
+            <span class="metric-num">[135]</span>
+            <span class="metric-label">Total Attendees</span>
+          </div>
+          <div class="metric-box">
+            <span class="metric-num">[8]</span>
+            <span class="metric-label">Schools Reached</span>
+          </div>
+          <div class="metric-box">
+            <span class="metric-num">[3]</span>
+            <span class="metric-label">Sessions Held</span>
+          </div>
+          <div class="metric-box">
+            <span class="metric-num">[4.8/5]</span>
+            <span class="metric-label">Avg Rating</span>
+          </div>
+        </div>
+        <a href="impact.html" class="btn-ghost">See Full Impact Report →</a>
+      </div>
+
+    </div>
+  </section>
+
+  <footer>
+    <div class="container footer-inner">
+      <div class="footer-logo">SSL<span class="dot">.</span></div>
+      <p>Open source spacecraft education. Built for the next generation.</p>
+      <div class="footer-links">
+        <a href="index.html">Home</a><a href="modules.html">Modules</a><a href="learn.html">Learn</a><a href="workshops.html">Workshops</a><a href="impact.html">Impact</a><a href="https://github.com" target="_blank">GitHub ↗</a>
+      </div>
+      <p class="footer-copy">© 2025 Space Systems Lab — Open Source</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
