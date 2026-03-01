@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Module 02: Attitude Control — Space Systems Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #060810;
+      --surface: #0c0f18;
+      --surface2: #121520;
+      --border: #1a2035;
+      --text: #c8d4e8;
+      --muted: #4a5568;
+      --accent: #00d4aa;
+      --accent2: #3b7eff;
+      --warn: #f59e0b;
+      --red: #ff4d6d;
+      --white: #ffffff;
+      --font: 'Outfit', sans-serif;
+      --mono: 'Space Mono', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* NAV */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 2rem;
+      border-bottom: 1px solid var(--border);
+      background: rgba(6,8,16,0.92);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      z-index: 200;
+    }
+    .nav-logo { font-family: var(--mono); font-size: 1rem; color: var(--white); letter-spacing: 2px; }
+    .nav-logo span { color: var(--accent); }
+    .nav-breadcrumb { font-size: 0.8rem; color: var(--muted); }
+    .nav-breadcrumb a { color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    .nav-breadcrumb a:hover { color: var(--accent); }
+    .nav-breadcrumb .sep { margin: 0 0.5rem; }
+    .nav-right a {
+      font-size: 0.82rem; color: var(--muted); text-decoration: none;
+      border: 1px solid var(--border); padding: 0.35rem 0.9rem;
+      border-radius: 4px; transition: color 0.2s, border-color 0.2s;
+    }
+    .nav-right a:hover { color: var(--accent); border-color: var(--accent); }
+
+    /* HEADER */
+    .module-header {
+      padding: 3rem 2rem 2rem;
+      max-width: 1300px;
+      margin: 0 auto;
+    }
+    .module-tag {
+      font-family: var(--mono); font-size: 0.7rem; color: var(--accent);
+      letter-spacing: 3px; text-transform: uppercase; display: block; margin-bottom: 0.75rem;
+    }
+    .module-header h1 {
+      font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 800; color: var(--white);
+      letter-spacing: -1.5px; line-height: 1.1; margin-bottom: 0.75rem;
+    }
+    .module-header p { color: var(--muted); font-size: 0.95rem; max-width: 560px; line-height: 1.7; }
+    .module-pills { display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap; }
+    .pill {
+      font-size: 0.72rem; font-family: var(--mono); padding: 0.25rem 0.7rem;
+      border-radius: 100px; border: 1px solid var(--border); color: var(--muted);
+    }
+
+    /* LAYOUT */
+    .simulator-layout {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 0 2rem 4rem;
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    /* CONTROLS PANEL */
+    .controls-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      position: sticky;
+      top: 80px;
+    }
+    .panel-title {
+      font-family: var(--mono); font-size: 0.65rem; letter-spacing: 3px;
+      text-transform: uppercase; color: var(--accent); margin-bottom: 1.5rem;
+      padding-bottom: 1rem; border-bottom: 1px solid var(--border);
+    }
+    .control-group { margin-bottom: 1.5rem; }
+    .control-label-row {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 0.6rem; gap: 0.5rem;
+    }
+    .control-label {
+      font-size: 0.82rem; font-weight: 600; color: var(--text);
+      display: flex; align-items: center; gap: 0.4rem;
+    }
+    .control-value { font-family: var(--mono); font-size: 0.75rem; color: var(--accent); white-space: nowrap; }
+
+    /* Info tooltip */
+    .info-btn {
+      width: 16px; height: 16px; border-radius: 50%; border: 1px solid var(--muted);
+      background: none; color: var(--muted); font-size: 0.6rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; position: relative;
+      flex-shrink: 0; transition: border-color 0.2s, color 0.2s;
+      font-family: var(--mono); line-height: 1; padding: 0;
+    }
+    .info-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .info-btn .tooltip {
+      position: absolute; left: 24px; top: 50%; transform: translateY(-50%);
+      background: var(--surface2); border: 1px solid var(--accent); border-radius: 8px;
+      padding: 0.9rem 1rem; width: 230px; font-size: 0.78rem; color: var(--text);
+      line-height: 1.6; z-index: 400; pointer-events: none; opacity: 0;
+      transition: opacity 0.2s; font-family: var(--font); font-weight: 400;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    }
+    .info-btn .tooltip::before {
+      content: ''; position: absolute; left: -6px; top: 50%; transform: translateY(-50%);
+      border: 5px solid transparent; border-right-color: var(--accent); border-left: none;
+    }
+    .info-btn:hover .tooltip { opacity: 1; }
+
+    input[type="range"] {
+      width: 100%; -webkit-appearance: none; appearance: none;
+      height: 4px; border-radius: 2px; background: var(--border); outline: none; cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%;
+      background: var(--accent); cursor: pointer; transition: transform 0.1s;
+      box-shadow: 0 0 6px rgba(0,212,170,0.4);
+    }
+    input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.3); }
+    .range-bounds { display: flex; justify-content: space-between; margin-top: 0.3rem; }
+    .range-bounds span { font-family: var(--mono); font-size: 0.6rem; color: var(--muted); }
+
+    /* Toggle row */
+    .toggle-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .toggle-btn {
+      flex: 1; padding: 0.45rem 0.6rem; background: var(--surface2);
+      border: 1px solid var(--border); border-radius: 6px; color: var(--muted);
+      font-size: 0.75rem; font-family: var(--font); cursor: pointer; transition: all 0.2s; text-align: center;
+    }
+    .toggle-btn.active { background: rgba(0,212,170,0.12); border-color: var(--accent); color: var(--accent); }
+    .toggle-btn.active-blue { background: rgba(59,126,255,0.12); border-color: var(--accent2); color: var(--accent2); }
+    .toggle-btn.active-warn { background: rgba(245,158,11,0.12); border-color: var(--warn); color: var(--warn); }
+
+    /* Thruster buttons */
+    .thruster-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    .thruster-btn {
+      padding: 0.55rem 0.5rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-family: var(--font);
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: center;
+      user-select: none;
+    }
+    .thruster-btn:active, .thruster-btn.firing {
+      background: rgba(255,77,109,0.15);
+      border-color: var(--red);
+      color: var(--red);
+      transform: scale(0.96);
+    }
+
+    /* PID controls */
+    .pid-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    .pid-input-group { display: flex; flex-direction: column; gap: 0.3rem; }
+    .pid-input-group label { font-size: 0.68rem; color: var(--muted); font-family: var(--mono); text-align: center; }
+    .pid-input-group input[type="number"] {
+      width: 100%; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 4px; padding: 0.35rem 0.4rem; color: var(--accent);
+      font-family: var(--mono); font-size: 0.75rem; text-align: center; outline: none;
+    }
+    .pid-input-group input[type="number"]:focus { border-color: var(--accent); }
+
+    /* Mode selector */
+    .mode-selector { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
+    .mode-btn {
+      flex: 1; padding: 0.6rem 0.5rem; background: var(--surface2);
+      border: 1px solid var(--border); border-radius: 8px; color: var(--muted);
+      font-size: 0.75rem; font-family: var(--font); font-weight: 600; cursor: pointer; transition: all 0.2s;
+      text-align: center;
+    }
+    .mode-btn.active { background: rgba(0,212,170,0.1); border-color: var(--accent); color: var(--accent); }
+
+    /* Readouts */
+    .readouts {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 1rem; margin-top: 1.25rem;
+    }
+    .readout-title { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; margin-bottom: 0.75rem; }
+    .readout-row { display: flex; justify-content: space-between; align-items: center; padding: 0.3rem 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
+    .readout-row:last-child { border-bottom: none; }
+    .readout-key { font-size: 0.73rem; color: var(--muted); }
+    .readout-val { font-family: var(--mono); font-size: 0.73rem; color: var(--white); }
+    .readout-val.green { color: var(--accent); }
+    .readout-val.blue { color: var(--accent2); }
+    .readout-val.amber { color: var(--warn); }
+    .readout-val.red { color: var(--red); }
+
+    /* CANVAS */
+    .canvas-area { display: flex; flex-direction: column; gap: 1.5rem; }
+    .canvas-wrapper {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden; position: relative;
+    }
+    .canvas-toolbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.75rem 1.2rem; border-bottom: 1px solid var(--border);
+    }
+    .canvas-title { font-family: var(--mono); font-size: 0.65rem; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; }
+    .canvas-btns { display: flex; gap: 0.5rem; }
+    .canvas-btn {
+      background: var(--surface2); border: 1px solid var(--border); color: var(--muted);
+      padding: 0.3rem 0.75rem; border-radius: 4px; font-size: 0.72rem;
+      cursor: pointer; font-family: var(--mono); transition: all 0.2s;
+    }
+    .canvas-btn:hover, .canvas-btn.active { color: var(--accent); border-color: var(--accent); }
+
+    canvas { display: block; width: 100%; background: transparent; }
+
+    .status-bar {
+      display: flex; align-items: center; gap: 1.5rem; padding: 0.6rem 1.2rem;
+      background: var(--surface2); border-top: 1px solid var(--border); flex-wrap: wrap;
+    }
+    .status-item { display: flex; align-items: center; gap: 0.4rem; font-family: var(--mono); font-size: 0.68rem; color: var(--muted); }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+    /* Target pointer display */
+    .target-indicator {
+      position: absolute; top: 50px; right: 16px;
+      background: rgba(59,126,255,0.12); border: 1px solid var(--accent2);
+      border-radius: 6px; padding: 0.4rem 0.8rem;
+      font-family: var(--mono); font-size: 0.68rem; color: var(--accent2);
+      pointer-events: none;
+    }
+
+    /* Physics cards */
+    .physics-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+    .physics-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 1.2rem; transition: border-color 0.2s, transform 0.2s;
+    }
+    .physics-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .phys-icon { font-size: 1.5rem; margin-bottom: 0.6rem; }
+    .phys-title { font-size: 0.85rem; font-weight: 700; color: var(--white); margin-bottom: 0.4rem; }
+    .phys-formula { font-family: var(--mono); font-size: 0.72rem; color: var(--accent); margin-bottom: 0.5rem; }
+    .phys-desc { font-size: 0.78rem; color: var(--muted); line-height: 1.6; }
+
+    /* Keyboard hint */
+    .keyboard-hint {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+      padding: 0.8rem 1.2rem; display: flex; gap: 1.5rem; flex-wrap: wrap; align-items: center;
+    }
+    .hint-title { font-family: var(--mono); font-size: 0.62rem; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; }
+    .key-item { display: flex; align-items: center; gap: 0.4rem; }
+    .key {
+      background: var(--surface2); border: 1px solid var(--border); border-bottom: 3px solid var(--muted);
+      border-radius: 4px; padding: 0.15rem 0.5rem; font-family: var(--mono);
+      font-size: 0.7rem; color: var(--text); min-width: 28px; text-align: center;
+    }
+    .key-desc { font-size: 0.75rem; color: var(--muted); }
+
+    @media (max-width: 900px) {
+      .simulator-layout { grid-template-columns: 1fr; padding: 0 1rem 3rem; }
+      .controls-panel { position: static; }
+      .physics-cards { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 600px) {
+      .physics-cards { grid-template-columns: 1fr; }
+      .module-header { padding: 2rem 1rem 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">SSL<span>.</span></div>
+  <div class="nav-breadcrumb">
+    <a href="modules.html">Modules</a>
+    <span class="sep">/</span>
+    <span>02 — Attitude Control</span>
+  </div>
+  <div class="nav-right">
+    <a href="modules.html">← Back to Modules</a>
+  </div>
+</nav>
+
+<div class="module-header">
+  <span class="module-tag">Module 02</span>
+  <h1>Attitude<br>Control</h1>
+  <p>Spin reaction wheels, fire thrusters, and let a PID controller do the work. Understand how spacecraft orient themselves in the void — without anything to push against.</p>
+  <div class="module-pills">
+    <span class="pill">Interactive</span>
+    <span class="pill">2D Simulation</span>
+    <span class="pill">Keyboard Controls</span>
+    <span class="pill">Intermediate</span>
+  </div>
+</div>
+
+<div class="simulator-layout">
+
+  <!-- CONTROLS PANEL -->
+  <div class="controls-panel">
+    <div class="panel-title">// Control Mode</div>
+
+    <div class="mode-selector">
+      <button class="mode-btn active" id="mode-manual" onclick="setMode('manual')">Manual</button>
+      <button class="mode-btn" id="mode-pid" onclick="setMode('pid')">PID Auto</button>
+      <button class="mode-btn" id="mode-detumble" onclick="setMode('detumble')">Detumble</button>
+    </div>
+
+    <!-- MANUAL MODE -->
+    <div id="panel-manual">
+
+      <div class="control-group">
+        <div class="control-label-row">
+          <div class="control-label">
+            Reaction Wheel
+            <button class="info-btn" tabindex="-1">i
+              <div class="tooltip">
+                <strong style="color:var(--accent)">Reaction Wheel</strong><br><br>
+                A spinning flywheel inside the spacecraft. By speeding it up or slowing it down, angular momentum is transferred to the spacecraft body — causing it to rotate in the opposite direction. No fuel needed. Used in most modern satellites.
+              </div>
+            </button>
+          </div>
+          <span class="control-value" id="rw-display">0 RPM</span>
+        </div>
+        <input type="range" id="rw-speed" min="-100" max="100" value="0" step="1">
+        <div class="range-bounds"><span>← CCW torque</span><span>CW torque →</span></div>
+      </div>
+
+      <div class="control-group">
+        <div class="control-label-row">
+          <div class="control-label">
+            Magnetorquer
+            <button class="info-btn" tabindex="-1">i
+              <div class="tooltip">
+                <strong style="color:var(--accent)">Magnetorquer</strong><br><br>
+                An electromagnet inside the spacecraft that interacts with Earth's magnetic field to produce a torque. Very power-efficient and commonly used in CubeSats. Weaker than reaction wheels but requires no moving parts.
+              </div>
+            </button>
+          </div>
+          <span class="control-value" id="mt-display">0 A·m²</span>
+        </div>
+        <input type="range" id="mt-strength" min="-100" max="100" value="0" step="1">
+        <div class="range-bounds"><span>← Negative</span><span>Positive →</span></div>
+      </div>
+
+      <div class="control-group">
+        <div class="control-label-row">
+          <div class="control-label">
+            Thrusters
+            <button class="info-btn" tabindex="-1">i
+              <div class="tooltip">
+                <strong style="color:var(--accent)">Attitude Thrusters</strong><br><br>
+                Small rocket nozzles arranged in pairs around the spacecraft. Firing opposite pairs creates a pure torque (rotation without translation). Fast and powerful, but uses propellant — a limited resource.
+              </div>
+            </button>
+          </div>
+        </div>
+        <div class="thruster-grid">
+          <button class="thruster-btn" id="t-cw" onmousedown="fireThruster('cw')" onmouseup="stopThruster()" onmouseleave="stopThruster()">↻ CW</button>
+          <button class="thruster-btn" id="t-ccw" onmousedown="fireThruster('ccw')" onmouseup="stopThruster()" onmouseleave="stopThruster()">↺ CCW</button>
+        </div>
+        <div style="font-size:0.72rem; color:var(--muted); margin-top:0.5rem; font-family:var(--mono)">
+          Or use [ A ] / [ D ] keys
+        </div>
+      </div>
+
+      <div class="control-group">
+        <div class="control-label-row">
+          <div class="control-label">
+            Target Angle
+            <button class="info-btn" tabindex="-1">i
+              <div class="tooltip">
+                <strong style="color:var(--accent)">Target Pointing</strong><br><br>
+                Set a desired pointing angle. The green arrow shows where the spacecraft should be pointing. In Manual mode, you control it yourself. Switch to PID Auto to watch the controller drive the error to zero automatically.
+              </div>
+            </button>
+          </div>
+          <span class="control-value" id="target-display">0°</span>
+        </div>
+        <input type="range" id="target-angle" min="0" max="360" value="0" step="1">
+        <div class="range-bounds"><span>0°</span><span>360°</span></div>
+      </div>
+
+    </div>
+
+    <!-- PID MODE -->
+    <div id="panel-pid" style="display:none">
+      <div class="control-group">
+        <div class="control-label-row">
+          <div class="control-label">
+            PID Gains
+            <button class="info-btn" tabindex="-1">i
+              <div class="tooltip">
+                <strong style="color:var(--accent)">PID Controller</strong><br><br>
+                Proportional–Integral–Derivative control. Kp reacts to current error. Ki corrects steady-state offset over time. Kd damps oscillation. Tune them and watch how the spacecraft response changes — too much Kp and it overshoots; add Kd to smooth it.
+              </div>
+            </button>
+          </div>
+        </div>
+        <div class="pid-row">
+          <div class="pid-input-group">
+            <label>Kp</label>
+            <input type="number" id="kp" value="2.0" min="0" max="20" step="0.1">
+          </div>
+          <div class="pid-input-group">
+            <label>Ki</label>
+            <input type="number" id="ki" value="0.05" min="0" max="5" step="0.01">
+          </div>
+          <div class="pid-input-group">
+            <label>Kd</label>
+            <input type="number" id="kd" value="4.0" min="0" max="20" step="0.1">
+          </div>
+        </div>
+      </div>
+      <div class="control-group">
+        <div class="control-label-row">
+          <div class="control-label">Target Angle</div>
+          <span class="control-value" id="target-display-pid">0°</span>
+        </div>
+        <input type="range" id="target-angle-pid" min="0" max="360" value="0" step="1">
+        <div class="range-bounds"><span>0°</span><span>360°</span></div>
+      </div>
+      <div style="font-size:0.78rem; color:var(--muted); line-height:1.6; margin-top:-0.5rem;">
+        Watch the spacecraft automatically point to target. Adjust Kd upward to reduce oscillation.
+      </div>
+    </div>
+
+    <!-- DETUMBLE MODE -->
+    <div id="panel-detumble" style="display:none">
+      <div style="background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.3); border-radius:8px; padding:1rem; margin-bottom:1.25rem;">
+        <div style="font-size:0.8rem; color:var(--warn); font-weight:600; margin-bottom:0.4rem;">⚠ Tumbling Detected</div>
+        <div style="font-size:0.78rem; color:var(--muted); line-height:1.6;">The spacecraft is tumbling after separation from the launch vehicle. B-dot algorithm is active — magnetorquers will damp rotation until stable.</div>
+      </div>
+      <div class="control-group">
+        <div class="control-label-row">
+          <div class="control-label">Initial Tumble Rate</div>
+          <span class="control-value" id="tumble-display">High</span>
+        </div>
+        <input type="range" id="tumble-rate" min="1" max="10" value="7" step="1">
+        <div class="range-bounds"><span>Low</span><span>High</span></div>
+      </div>
+      <button class="toggle-btn active" style="width:100%; margin-top:0.5rem;" onclick="triggerDetumble()">▶ Begin Detumble Sequence</button>
+    </div>
+
+    <!-- Readouts -->
+    <div class="readouts">
+      <div class="readout-title">// Attitude Telemetry</div>
+      <div class="readout-row">
+        <span class="readout-key">Current Angle</span>
+        <span class="readout-val green" id="r-angle">0.0°</span>
+      </div>
+      <div class="readout-row">
+        <span class="readout-key">Angular Velocity</span>
+        <span class="readout-val" id="r-omega">0.00 °/s</span>
+      </div>
+      <div class="readout-row">
+        <span class="readout-key">Pointing Error</span>
+        <span class="readout-val amber" id="r-error">0.0°</span>
+      </div>
+      <div class="readout-row">
+        <span class="readout-key">RW Speed</span>
+        <span class="readout-val blue" id="r-rw">0 RPM</span>
+      </div>
+      <div class="readout-row">
+        <span class="readout-key">Control Mode</span>
+        <span class="readout-val" id="r-mode">Manual</span>
+      </div>
+      <div class="readout-row">
+        <span class="readout-key">Fuel Remaining</span>
+        <span class="readout-val green" id="r-fuel">100%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CANVAS AREA -->
+  <div class="canvas-area">
+
+    <div class="canvas-wrapper">
+      <div class="canvas-toolbar">
+        <span class="canvas-title">// Attitude Visualizer — 2D Body Frame</span>
+        <div class="canvas-btns">
+          <button class="canvas-btn active" id="btn-vectors" onclick="toggleVectors()">Vectors ON</button>
+          <button class="canvas-btn" id="btn-bodyframe" onclick="toggleBodyFrame()">Body Frame</button>
+          <button class="canvas-btn" onclick="resetSat()">Reset</button>
+        </div>
+      </div>
+      <canvas id="attCanvas" width="760" height="480"></canvas>
+      <div class="target-indicator" id="target-label">TARGET: 0°</div>
+      <div class="status-bar">
+        <div class="status-item"><div class="status-dot"></div><span>ADCS ACTIVE</span></div>
+        <div class="status-item">θ: <span id="s-angle" style="color:var(--text); margin-left:4px">0.0°</span></div>
+        <div class="status-item">ω: <span id="s-omega" style="color:var(--text); margin-left:4px">0.00</span> °/s</div>
+        <div class="status-item" id="s-status" style="color:var(--accent)"></div>
+      </div>
+    </div>
+
+    <!-- Keyboard hint -->
+    <div class="keyboard-hint">
+      <span class="hint-title">// Keyboard</span>
+      <div class="key-item"><span class="key">A</span><span class="key-desc">CCW thruster</span></div>
+      <div class="key-item"><span class="key">D</span><span class="key-desc">CW thruster</span></div>
+      <div class="key-item"><span class="key">Space</span><span class="key-desc">Kill rotation</span></div>
+      <div class="key-item"><span class="key">R</span><span class="key-desc">Reset</span></div>
+      <div class="key-item"><span class="key">1</span><span class="key-desc">Manual</span></div>
+      <div class="key-item"><span class="key">2</span><span class="key-desc">PID Auto</span></div>
+    </div>
+
+    <!-- Physics cards -->
+    <div class="physics-cards">
+      <div class="physics-card">
+        <div class="phys-icon">🌀</div>
+        <div class="phys-title">Angular Momentum</div>
+        <div class="phys-formula">L = I · ω</div>
+        <div class="phys-desc">A reaction wheel stores angular momentum in its spinning mass. When you spin the wheel faster, the spacecraft must spin the other way to conserve total angular momentum — no external forces needed.</div>
+      </div>
+      <div class="physics-card">
+        <div class="phys-icon">🧲</div>
+        <div class="phys-title">Magnetic Torque</div>
+        <div class="phys-formula">τ = m × B</div>
+        <div class="phys-desc">A magnetorquer generates a magnetic dipole moment m that interacts with Earth's field B, producing a torque. The cross product means torque is perpendicular to both — so full 3-axis control needs 3 magnetorquers.</div>
+      </div>
+      <div class="physics-card">
+        <div class="phys-icon">⚙️</div>
+        <div class="phys-title">PID Control</div>
+        <div class="phys-formula">u = Kp·e + Ki·∫e + Kd·ė</div>
+        <div class="phys-desc">The controller computes error between desired and actual angle. Kp drives toward target, Ki removes steady-state offset, and Kd prevents overshoot by reacting to how fast the error is changing.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ============================================================
+// ATTITUDE CONTROL SIMULATOR — Module 02
+// Space Systems Lab
+// ============================================================
+
+const canvas = document.getElementById('attCanvas');
+const ctx = canvas.getContext('2d');
+
+// State
+let sat = {
+  angle: 0,          // radians
+  omega: 0,          // rad/s
+  inertia: 1.0,      // kg·m² (simplified)
+  rwSpeed: 0,        // RPM (visual)
+  rwAngMom: 0,       // internal angular momentum of wheel
+  mtStrength: 0,
+  thrusterActive: null,
+  fuel: 100,
+  targetAngle: 0,    // radians
+  mode: 'manual',
+  showVectors: true,
+  showBodyFrame: false,
+  detumbling: false,
+  frameCount: 0,
+};
+
+// PID state
+let pid = {
+  kp: 2.0, ki: 0.05, kd: 4.0,
+  integral: 0,
+  prevError: 0,
+};
+
+// Stars
+let stars = [];
+function initStars() {
+  stars = [];
+  for (let i = 0; i < 120; i++) {
+    stars.push({ x: Math.random(), y: Math.random(), r: Math.random() * 1.1 + 0.2, a: Math.random() * 0.5 + 0.1 });
+  }
+}
+initStars();
+
+// Draw background
+function drawBG() {
+  ctx.fillStyle = '#060810';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  stars.forEach(s => {
+    ctx.beginPath();
+    ctx.arc(s.x * canvas.width, s.y * canvas.height, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(180,200,240,${s.a})`;
+    ctx.fill();
+  });
+}
+
+// Draw Earth in corner (reference)
+function drawEarthRef() {
+  const x = 60, y = canvas.height - 60;
+  const grad = ctx.createRadialGradient(x, y, 5, x, y, 40);
+  grad.addColorStop(0, '#3a90e8');
+  grad.addColorStop(1, '#0f3d82');
+  ctx.beginPath();
+  ctx.arc(x, y, 40, 0, Math.PI * 2);
+  ctx.fillStyle = grad;
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(x, y, 43, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(100,180,255,0.25)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.fillStyle = 'rgba(100,160,220,0.5)';
+  ctx.font = "9px 'Space Mono'";
+  ctx.textAlign = 'center';
+  ctx.fillText('EARTH', x, y + 56);
+
+  // Nadir arrow
+  const cx2 = canvas.width / 2, cy2 = canvas.height / 2;
+  const dx = x - cx2, dy = y - cy2;
+  const len = Math.sqrt(dx * dx + dy * dy);
+  const nx = dx / len * 30, ny = dy / len * 30;
+  ctx.strokeStyle = 'rgba(59,126,255,0.25)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4, 6]);
+  ctx.beginPath();
+  ctx.moveTo(cx2, cy2);
+  ctx.lineTo(cx2 + dx * 0.85, cy2 + dy * 0.85);
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+// Draw compass / reference frame
+function drawCompass(cx, cy) {
+  const r = 180;
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Tick marks every 30°
+  for (let i = 0; i < 12; i++) {
+    const a = (i * 30 * Math.PI) / 180;
+    const inner = i % 3 === 0 ? r - 12 : r - 7;
+    ctx.strokeStyle = i % 3 === 0 ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.05)';
+    ctx.lineWidth = i % 3 === 0 ? 1.5 : 1;
+    ctx.beginPath();
+    ctx.moveTo(cx + inner * Math.cos(a), cy + inner * Math.sin(a));
+    ctx.lineTo(cx + r * Math.cos(a), cy + r * Math.sin(a));
+    ctx.stroke();
+
+    if (i % 3 === 0) {
+      ctx.fillStyle = 'rgba(100,120,160,0.5)';
+      ctx.font = "9px 'Space Mono'";
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const labelR = r + 16;
+      const deg = i * 30;
+      ctx.fillText(deg + '°', cx + labelR * Math.cos(a), cy + labelR * Math.sin(a));
+    }
+  }
+}
+
+// Draw target angle arrow
+function drawTargetArrow(cx, cy) {
+  const a = sat.targetAngle - Math.PI / 2;
+  const len = 155;
+  ctx.save();
+  ctx.strokeStyle = 'rgba(59,126,255,0.5)';
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([5, 5]);
+  ctx.beginPath();
+  ctx.moveTo(cx, cy);
+  ctx.lineTo(cx + len * Math.cos(a), cy + len * Math.sin(a));
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Arrowhead
+  const tipX = cx + len * Math.cos(a);
+  const tipY = cy + len * Math.sin(a);
+  ctx.strokeStyle = 'rgba(59,126,255,0.8)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(tipX, tipY);
+  ctx.lineTo(tipX - 8 * Math.cos(a - 0.3), tipY - 8 * Math.sin(a - 0.3));
+  ctx.moveTo(tipX, tipY);
+  ctx.lineTo(tipX - 8 * Math.cos(a + 0.3), tipY - 8 * Math.sin(a + 0.3));
+  ctx.stroke();
+  ctx.restore();
+}
+
+// Draw spacecraft body
+function drawSpacecraft(cx, cy) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(sat.angle);
+
+  // Glow underneath
+  const glow = ctx.createRadialGradient(0, 0, 5, 0, 0, 60);
+  glow.addColorStop(0, 'rgba(0,212,170,0.12)');
+  glow.addColorStop(1, 'rgba(0,212,170,0)');
+  ctx.beginPath();
+  ctx.arc(0, 0, 60, 0, Math.PI * 2);
+  ctx.fillStyle = glow;
+  ctx.fill();
+
+  // Main bus (rectangular body)
+  const bw = 44, bh = 56;
+  ctx.fillStyle = '#1e2a3a';
+  ctx.strokeStyle = '#3a5272';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.roundRect(-bw / 2, -bh / 2, bw, bh, 4);
+  ctx.fill();
+  ctx.stroke();
+
+  // Surface panel lines
+  ctx.strokeStyle = 'rgba(80,120,180,0.3)';
+  ctx.lineWidth = 0.8;
+  for (let i = -1; i <= 1; i++) {
+    ctx.beginPath();
+    ctx.moveTo(i * 12, -bh / 2 + 4);
+    ctx.lineTo(i * 12, bh / 2 - 4);
+    ctx.stroke();
+  }
+
+  // Solar panels
+  const panelW = 52, panelH = 14;
+  const panelColors = ['#1a3d8f', '#1e4aa0', '#2255b0'];
+
+  // Left panel
+  ctx.save();
+  ctx.translate(-bw / 2 - 5 - panelW / 2, 0);
+  panelColors.forEach((c, i) => {
+    ctx.fillStyle = c;
+    ctx.fillRect(-panelW / 2 + i * (panelW / 3), -panelH / 2, panelW / 3 - 1, panelH);
+  });
+  ctx.strokeStyle = 'rgba(59,126,255,0.4)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(-panelW / 2, -panelH / 2, panelW, panelH);
+  ctx.restore();
+
+  // Right panel
+  ctx.save();
+  ctx.translate(bw / 2 + 5 + panelW / 2, 0);
+  panelColors.forEach((c, i) => {
+    ctx.fillStyle = c;
+    ctx.fillRect(-panelW / 2 + i * (panelW / 3), -panelH / 2, panelW / 3 - 1, panelH);
+  });
+  ctx.strokeStyle = 'rgba(59,126,255,0.4)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(-panelW / 2, -panelH / 2, panelW, panelH);
+  ctx.restore();
+
+  // Panel booms
+  ctx.strokeStyle = '#2a3a50';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(-bw / 2, 0);
+  ctx.lineTo(-bw / 2 - 5, 0);
+  ctx.moveTo(bw / 2, 0);
+  ctx.lineTo(bw / 2 + 5, 0);
+  ctx.stroke();
+
+  // Antenna (top)
+  ctx.strokeStyle = '#4a7a9a';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(0, -bh / 2);
+  ctx.lineTo(0, -bh / 2 - 18);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(0, -bh / 2 - 22, 5, 0.4, Math.PI - 0.4);
+  ctx.stroke();
+
+  // Pointing arrow (body +Z axis)
+  if (sat.showVectors) {
+    ctx.strokeStyle = 'rgba(0,212,170,0.9)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0, -bh / 2 - 5);
+    ctx.lineTo(0, -bh / 2 - 40);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(0, -bh / 2 - 40);
+    ctx.lineTo(-5, -bh / 2 - 30);
+    ctx.moveTo(0, -bh / 2 - 40);
+    ctx.lineTo(5, -bh / 2 - 30);
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(0,212,170,0.8)';
+    ctx.font = "9px 'Space Mono'";
+    ctx.textAlign = 'center';
+    ctx.fillText('+Z', 0, -bh / 2 - 46);
+  }
+
+  // Body frame axes
+  if (sat.showBodyFrame) {
+    ctx.strokeStyle = 'rgba(255,77,109,0.8)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(0, 0); ctx.lineTo(50, 0);
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(255,77,109,0.8)';
+    ctx.font = "9px 'Space Mono'";
+    ctx.fillText('+X', 55, 0);
+
+    ctx.strokeStyle = 'rgba(0,212,170,0.8)';
+    ctx.beginPath();
+    ctx.moveTo(0, 0); ctx.lineTo(0, -50);
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(0,212,170,0.8)';
+    ctx.fillText('+Y', 0, -55);
+  }
+
+  // Thruster fire effect
+  if (sat.thrusterActive === 'cw') {
+    drawThrusterFlame(ctx, -bw / 2 - 2, bh / 2, 1);
+    drawThrusterFlame(ctx, bw / 2 + 2, -bh / 2, -1);
+  } else if (sat.thrusterActive === 'ccw') {
+    drawThrusterFlame(ctx, bw / 2 + 2, bh / 2, -1);
+    drawThrusterFlame(ctx, -bw / 2 - 2, -bh / 2, 1);
+  }
+
+  // Reaction wheel (visible spinning disc inside)
+  const rwAngle = sat.frameCount * (sat.rwSpeed / 30) * 0.1;
+  ctx.save();
+  ctx.rotate(rwAngle);
+  ctx.beginPath();
+  ctx.arc(0, 8, 12, 0, Math.PI * 2);
+  const rwColor = Math.abs(sat.rwSpeed) > 10 ? 'rgba(0,212,170,0.35)' : 'rgba(80,100,140,0.3)';
+  ctx.fillStyle = rwColor;
+  ctx.fill();
+  ctx.strokeStyle = Math.abs(sat.rwSpeed) > 10 ? 'rgba(0,212,170,0.6)' : 'rgba(80,100,140,0.5)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  // spokes
+  for (let i = 0; i < 4; i++) {
+    const a2 = i * Math.PI / 2;
+    ctx.beginPath();
+    ctx.moveTo(0, 8);
+    ctx.lineTo(10 * Math.cos(a2), 8 + 10 * Math.sin(a2));
+    ctx.strokeStyle = 'rgba(150,180,220,0.3)';
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  ctx.restore();
+}
+
+function drawThrusterFlame(ctx, x, y, dir) {
+  const len = 8 + Math.random() * 6;
+  const spread = Math.PI / 6;
+  const baseAngle = dir > 0 ? 0 : Math.PI;
+  ctx.save();
+  const grad = ctx.createRadialGradient(x, y, 0, x, y, len);
+  grad.addColorStop(0, 'rgba(255,180,60,0.9)');
+  grad.addColorStop(0.5, 'rgba(255,80,30,0.6)');
+  grad.addColorStop(1, 'rgba(255,60,20,0)');
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.arc(x, y, len, baseAngle - spread, baseAngle + spread);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+// Angular momentum error arc
+function drawErrorArc(cx, cy) {
+  const error = getError();
+  if (Math.abs(error) < 0.5 * Math.PI / 180) return;
+  const r = 130;
+  const startA = sat.targetAngle - Math.PI / 2;
+  const endA = sat.angle - Math.PI / 2;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, startA, endA, error > 0);
+  ctx.strokeStyle = Math.abs(error) > 10 * Math.PI / 180
+    ? 'rgba(255,77,109,0.4)'
+    : 'rgba(245,158,11,0.4)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Error label
+  const midAngle = (startA + endA) / 2;
+  const errorDeg = (error * 180 / Math.PI).toFixed(1);
+  ctx.fillStyle = 'rgba(245,158,11,0.7)';
+  ctx.font = "10px 'Space Mono'";
+  ctx.textAlign = 'center';
+  ctx.fillText(Math.abs(errorDeg) + '°', cx + (r + 20) * Math.cos(midAngle), cy + (r + 20) * Math.sin(midAngle));
+}
+
+function getError() {
+  let e = sat.targetAngle - sat.angle;
+  // Normalize to [-π, π]
+  while (e > Math.PI) e -= 2 * Math.PI;
+  while (e < -Math.PI) e += 2 * Math.PI;
+  return e;
+}
+
+// ===== PHYSICS UPDATE =====
+const DT = 1 / 60;
+const RW_TORQUE = 0.3;     // Nm per unit slider
+const MT_TORQUE = 0.05;    // Nm per unit (weaker)
+const THRUSTER_TORQUE = 1.2; // Nm
+const DAMPING = 0.998;     // slight drag (e.g., atmosphere)
+const FUEL_RATE = 0.08;    // % per frame per thruster
+
+function updatePhysics() {
+  let torque = 0;
+
+  if (sat.mode === 'manual') {
+    // Reaction wheel: wheel torque = -d(Lw)/dt
+    const rwTarget = sat.rwSpeed / 100 * 5; // internal angular momentum target
+    const rwDelta = (rwTarget - sat.rwAngMom) * 0.05;
+    sat.rwAngMom += rwDelta;
+    torque -= rwDelta * 3;  // reaction on spacecraft
+
+    // Magnetorquer
+    torque += (sat.mtStrength / 100) * MT_TORQUE;
+
+    // Thrusters
+    if (sat.thrusterActive === 'cw' && sat.fuel > 0) {
+      torque += THRUSTER_TORQUE;
+      sat.fuel = Math.max(0, sat.fuel - FUEL_RATE);
+    } else if (sat.thrusterActive === 'ccw' && sat.fuel > 0) {
+      torque -= THRUSTER_TORQUE;
+      sat.fuel = Math.max(0, sat.fuel - FUEL_RATE);
+    }
+
+  } else if (sat.mode === 'pid') {
+    const kp = parseFloat(document.getElementById('kp').value) || 2;
+    const ki = parseFloat(document.getElementById('ki').value) || 0.05;
+    const kd = parseFloat(document.getElementById('kd').value) || 4;
+
+    const error = getError();
+    pid.integral = Math.max(-5, Math.min(5, pid.integral + error * DT));
+    const derivative = (error - pid.prevError) / DT;
+    pid.prevError = error;
+
+    torque = kp * error + ki * pid.integral + kd * derivative;
+    torque = Math.max(-3, Math.min(3, torque)); // clamp
+
+  } else if (sat.mode === 'detumble') {
+    // B-dot: torque opposes angular velocity
+    torque = -sat.omega * 0.8;
+  }
+
+  // Integrate
+  const alpha = torque / sat.inertia;
+  sat.omega += alpha * DT;
+  sat.omega *= DAMPING;
+  sat.angle += sat.omega * DT;
+
+  // Clamp omega for sanity
+  sat.omega = Math.max(-8, Math.min(8, sat.omega));
+  sat.frameCount++;
+}
+
+// ===== DRAW LOOP =====
+function draw() {
+  const wrapper = canvas.parentElement;
+  const displayW = wrapper.clientWidth;
+  const displayH = Math.max(360, Math.min(500, displayW * 0.6));
+  if (canvas.width !== displayW || canvas.height !== displayH) {
+    canvas.width = displayW;
+    canvas.height = displayH;
+    initStars();
+  }
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawBG();
+
+  const cx = canvas.width / 2;
+  const cy = canvas.height / 2;
+
+  drawEarthRef();
+  drawCompass(cx, cy);
+  drawTargetArrow(cx, cy);
+  drawErrorArc(cx, cy);
+  drawSpacecraft(cx, cy);
+
+  updatePhysics();
+  updateReadouts();
+
+  requestAnimationFrame(draw);
+}
+
+function updateReadouts() {
+  const angleDeg = ((sat.angle * 180 / Math.PI) % 360 + 360) % 360;
+  const omegaDeg = (sat.omega * 180 / Math.PI).toFixed(2);
+  const errorDeg = Math.abs(getError() * 180 / Math.PI).toFixed(1);
+  const rwRPM = Math.round(sat.rwAngMom * 200);
+
+  document.getElementById('r-angle').textContent = angleDeg.toFixed(1) + '°';
+  document.getElementById('r-omega').textContent = omegaDeg + ' °/s';
+  document.getElementById('r-error').textContent = errorDeg + '°';
+  document.getElementById('r-error').className = 'readout-val ' + (errorDeg > 10 ? 'red' : errorDeg > 2 ? 'amber' : 'green');
+  document.getElementById('r-rw').textContent = rwRPM + ' RPM';
+  document.getElementById('r-mode').textContent = sat.mode.toUpperCase();
+  document.getElementById('r-fuel').textContent = sat.fuel.toFixed(1) + '%';
+  document.getElementById('r-fuel').className = 'readout-val ' + (sat.fuel > 50 ? 'green' : sat.fuel > 20 ? 'amber' : 'red');
+
+  document.getElementById('s-angle').textContent = angleDeg.toFixed(1) + '°';
+  document.getElementById('s-omega').textContent = omegaDeg;
+
+  // Status text
+  const absOmega = Math.abs(sat.omega * 180 / Math.PI);
+  if (sat.mode === 'detumble') {
+    document.getElementById('s-status').textContent = absOmega < 0.5 ? 'DETUMBLE COMPLETE' : 'B-DOT DAMPING ACTIVE';
+    document.getElementById('s-status').style.color = absOmega < 0.5 ? 'var(--accent)' : 'var(--warn)';
+  } else if (sat.mode === 'pid') {
+    document.getElementById('s-status').textContent = errorDeg < 1 ? 'ON TARGET' : 'TRACKING...';
+    document.getElementById('s-status').style.color = errorDeg < 1 ? 'var(--accent)' : 'var(--accent2)';
+  } else {
+    document.getElementById('s-status').textContent = sat.thrusterActive ? 'THRUSTERS FIRING' : '';
+  }
+}
+
+// ===== CONTROLS =====
+function setMode(mode) {
+  sat.mode = mode;
+  pid.integral = 0;
+  pid.prevError = 0;
+  ['manual', 'pid', 'detumble'].forEach(m => {
+    document.getElementById('mode-' + m).className = 'mode-btn' + (m === mode ? ' active' : '');
+    document.getElementById('panel-' + m).style.display = m === mode ? 'block' : 'none';
+  });
+  if (mode === 'detumble') {
+    const rate = parseInt(document.getElementById('tumble-rate').value);
+    sat.omega = (rate / 10) * 3 * (Math.random() > 0.5 ? 1 : -1);
+  }
+}
+
+function toggleVectors() {
+  sat.showVectors = !sat.showVectors;
+  const btn = document.getElementById('btn-vectors');
+  btn.textContent = sat.showVectors ? 'Vectors ON' : 'Vectors OFF';
+  btn.className = 'canvas-btn' + (sat.showVectors ? ' active' : '');
+}
+
+function toggleBodyFrame() {
+  sat.showBodyFrame = !sat.showBodyFrame;
+  const btn = document.getElementById('btn-bodyframe');
+  btn.textContent = sat.showBodyFrame ? 'Frame ON' : 'Body Frame';
+  btn.className = 'canvas-btn' + (sat.showBodyFrame ? ' active' : '');
+}
+
+function fireThruster(dir) {
+  sat.thrusterActive = dir;
+  document.getElementById('t-cw').className = 'thruster-btn' + (dir === 'cw' ? ' firing' : '');
+  document.getElementById('t-ccw').className = 'thruster-btn' + (dir === 'ccw' ? ' firing' : '');
+}
+
+function stopThruster() {
+  sat.thrusterActive = null;
+  document.getElementById('t-cw').className = 'thruster-btn';
+  document.getElementById('t-ccw').className = 'thruster-btn';
+}
+
+function triggerDetumble() {
+  const rate = parseInt(document.getElementById('tumble-rate').value);
+  sat.omega = (rate / 10) * 3 * (Math.random() > 0.5 ? 1 : -1);
+}
+
+function resetSat() {
+  sat.angle = 0; sat.omega = 0; sat.rwAngMom = 0; sat.rwSpeed = 0;
+  sat.fuel = 100; sat.thrusterActive = null;
+  pid.integral = 0; pid.prevError = 0;
+  document.getElementById('rw-speed').value = 0;
+  document.getElementById('mt-strength').value = 0;
+  document.getElementById('rw-display').textContent = '0 RPM';
+  document.getElementById('mt-display').textContent = '0 A·m²';
+  stopThruster();
+}
+
+// Sliders
+document.getElementById('rw-speed').addEventListener('input', function() {
+  sat.rwSpeed = parseInt(this.value);
+  document.getElementById('rw-display').textContent = sat.rwSpeed + ' RPM';
+});
+
+document.getElementById('mt-strength').addEventListener('input', function() {
+  sat.mtStrength = parseInt(this.value);
+  document.getElementById('mt-display').textContent = sat.mtStrength + ' A·m²';
+});
+
+document.getElementById('target-angle').addEventListener('input', function() {
+  const deg = parseInt(this.value);
+  sat.targetAngle = deg * Math.PI / 180;
+  document.getElementById('target-display').textContent = deg + '°';
+  document.getElementById('target-label').textContent = 'TARGET: ' + deg + '°';
+});
+
+document.getElementById('target-angle-pid').addEventListener('input', function() {
+  const deg = parseInt(this.value);
+  sat.targetAngle = deg * Math.PI / 180;
+  document.getElementById('target-display-pid').textContent = deg + '°';
+  document.getElementById('target-label').textContent = 'TARGET: ' + deg + '°';
+});
+
+document.getElementById('tumble-rate').addEventListener('input', function() {
+  const labels = ['','Low','','Medium','','','','High','','','Very High'];
+  document.getElementById('tumble-display').textContent = labels[parseInt(this.value)] || this.value;
+});
+
+// Keyboard controls
+const keysDown = new Set();
+document.addEventListener('keydown', e => {
+  if (keysDown.has(e.key)) return;
+  keysDown.add(e.key);
+  const k = e.key.toLowerCase();
+  if (k === 'a') fireThruster('ccw');
+  if (k === 'd') fireThruster('cw');
+  if (k === ' ') { e.preventDefault(); sat.omega = 0; sat.rwAngMom = 0; }
+  if (k === 'r') resetSat();
+  if (k === '1') setMode('manual');
+  if (k === '2') setMode('pid');
+});
+document.addEventListener('keyup', e => {
+  keysDown.delete(e.key);
+  const k = e.key.toLowerCase();
+  if (k === 'a' || k === 'd') stopThruster();
+});
+
+// Start
+draw();
+</script>
+</body>
+</html>
