@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Module 04: Mission Design — Space Systems Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #060810;
+      --surface: #0c0f18;
+      --surface2: #121520;
+      --border: #1a2035;
+      --text: #c8d4e8;
+      --muted: #4a5568;
+      --accent: #00d4aa;
+      --accent2: #3b7eff;
+      --warn: #f59e0b;
+      --red: #ff4d6d;
+      --green: #22c55e;
+      --white: #ffffff;
+      --font: 'Outfit', sans-serif;
+      --mono: 'Space Mono', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; overflow-x: hidden; }
+
+    /* NAV */
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 2rem; border-bottom: 1px solid var(--border);
+      background: rgba(6,8,16,0.95); backdrop-filter: blur(10px);
+      position: sticky; top: 0; z-index: 300;
+    }
+    .nav-logo { font-family: var(--mono); font-size: 1rem; color: var(--white); letter-spacing: 2px; }
+    .nav-logo span { color: var(--accent); }
+    .nav-bc { font-size: 0.8rem; color: var(--muted); }
+    .nav-bc a { color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    .nav-bc a:hover { color: var(--accent); }
+    .nav-bc .sep { margin: 0 0.5rem; }
+    .nav-right a {
+      font-size: 0.82rem; color: var(--muted); text-decoration: none;
+      border: 1px solid var(--border); padding: 0.35rem 0.9rem; border-radius: 4px; transition: all 0.2s;
+    }
+    .nav-right a:hover { color: var(--accent); border-color: var(--accent); }
+
+    /* HEADER */
+    .module-header { padding: 3rem 2rem 1.5rem; max-width: 1300px; margin: 0 auto; }
+    .module-tag { font-family: var(--mono); font-size: 0.7rem; color: var(--accent); letter-spacing: 3px; text-transform: uppercase; display: block; margin-bottom: 0.75rem; }
+    .module-header h1 { font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 800; color: var(--white); letter-spacing: -1.5px; line-height: 1.1; margin-bottom: 0.75rem; }
+    .module-header p { color: var(--muted); font-size: 0.95rem; max-width: 640px; line-height: 1.7; }
+    .module-pills { display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap; }
+    .pill { font-size: 0.72rem; font-family: var(--mono); padding: 0.25rem 0.7rem; border-radius: 100px; border: 1px solid var(--border); color: var(--muted); }
+
+    /* PROGRESS STEPPER */
+    .stepper {
+      max-width: 1300px; margin: 0 auto; padding: 0 2rem 1.5rem;
+      display: flex; align-items: center; gap: 0;
+    }
+    .step-item {
+      display: flex; align-items: center; flex: 1; cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .step-item:last-child { flex: 0; }
+    .step-circle {
+      width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--mono); font-size: 0.72rem; color: var(--muted);
+      flex-shrink: 0; transition: all 0.3s; position: relative; z-index: 1;
+      background: var(--bg);
+    }
+    .step-circle.active { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 12px rgba(0,212,170,0.3); }
+    .step-circle.done { border-color: var(--accent); background: var(--accent); color: var(--bg); }
+    .step-line { flex: 1; height: 2px; background: var(--border); margin: 0 -1px; transition: background 0.3s; }
+    .step-line.done { background: var(--accent); }
+    .step-label { font-size: 0.72rem; color: var(--muted); white-space: nowrap; margin-top: 0.3rem; font-weight: 600; }
+    .step-label.active { color: var(--accent); }
+    .step-wrapper { display: flex; flex-direction: column; align-items: center; flex: 1; }
+    .step-wrapper:last-child { flex: 0; }
+
+    /* MAIN CONTENT */
+    .mission-layout {
+      max-width: 1300px; margin: 0 auto;
+      padding: 0 2rem 5rem;
+      display: grid; grid-template-columns: 1fr 360px; gap: 1.5rem; align-items: start;
+    }
+
+    /* STEP PANELS */
+    .step-panel { display: none; }
+    .step-panel.active { display: block; }
+
+    .panel-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden; margin-bottom: 1.5rem;
+    }
+    .panel-card-header {
+      padding: 1rem 1.5rem; border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .panel-card-title { font-family: var(--mono); font-size: 0.65rem; letter-spacing: 2px; color: var(--accent); text-transform: uppercase; }
+    .panel-card-sub { font-size: 0.75rem; color: var(--muted); }
+    .panel-card-body { padding: 1.5rem; }
+
+    h2 { font-size: 1.5rem; font-weight: 800; color: var(--white); letter-spacing: -0.5px; margin-bottom: 0.5rem; }
+    .step-intro { font-size: 0.88rem; color: var(--muted); line-height: 1.7; margin-bottom: 1.5rem; }
+
+    /* Option cards (mission type, orbit, etc) */
+    .option-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; }
+    .option-card {
+      background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+      padding: 1.1rem; cursor: pointer; transition: all 0.2s; text-align: left;
+    }
+    .option-card:hover { border-color: rgba(255,255,255,0.2); transform: translateY(-2px); }
+    .option-card.selected { border-color: var(--accent); background: rgba(0,212,170,0.07); }
+    .option-card.selected-blue { border-color: var(--accent2); background: rgba(59,126,255,0.07); }
+    .option-icon { font-size: 1.6rem; margin-bottom: 0.5rem; }
+    .option-name { font-size: 0.88rem; font-weight: 700; color: var(--white); margin-bottom: 0.25rem; }
+    .option-desc { font-size: 0.75rem; color: var(--muted); line-height: 1.5; }
+    .option-badge { font-family: var(--mono); font-size: 0.6rem; color: var(--accent); margin-top: 0.5rem; display: block; }
+
+    /* Form controls */
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+    .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+    .form-group label { font-size: 0.8rem; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 0.4rem; }
+    .form-group input, .form-group select, .form-group textarea {
+      background: var(--surface2); border: 1px solid var(--border); border-radius: 6px;
+      padding: 0.65rem 0.9rem; color: var(--text); font-family: var(--font); font-size: 0.88rem;
+      outline: none; transition: border-color 0.2s; width: 100%;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--accent); }
+    .form-group select option { background: var(--surface2); }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+
+    /* Range slider */
+    .slider-group { margin-bottom: 1.25rem; }
+    .slider-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem; }
+    .slider-label { font-size: 0.82rem; font-weight: 600; color: var(--text); }
+    .slider-val { font-family: var(--mono); font-size: 0.75rem; color: var(--accent); }
+    input[type="range"] {
+      width: 100%; -webkit-appearance: none; appearance: none;
+      height: 4px; border-radius: 2px; background: var(--border); outline: none; cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%;
+      background: var(--accent); cursor: pointer; box-shadow: 0 0 6px rgba(0,212,170,0.4);
+    }
+    .range-bounds { display: flex; justify-content: space-between; margin-top: 0.25rem; }
+    .range-bounds span { font-family: var(--mono); font-size: 0.6rem; color: var(--muted); }
+
+    /* Tooltip */
+    .info-btn {
+      width: 15px; height: 15px; border-radius: 50%; border: 1px solid var(--muted);
+      background: none; color: var(--muted); font-size: 0.58rem; cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center; position: relative;
+      flex-shrink: 0; transition: all 0.2s; font-family: var(--mono);
+    }
+    .info-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .info-btn .tooltip {
+      position: absolute; left: 20px; top: 50%; transform: translateY(-50%);
+      background: var(--surface2); border: 1px solid var(--accent); border-radius: 8px;
+      padding: 0.8rem; width: 220px; font-size: 0.76rem; color: var(--text);
+      line-height: 1.6; z-index: 500; pointer-events: none; opacity: 0;
+      transition: opacity 0.2s; font-family: var(--font); font-weight: 400;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    }
+    .info-btn .tooltip::before {
+      content: ''; position: absolute; left: -5px; top: 50%; transform: translateY(-50%);
+      border: 4px solid transparent; border-right-color: var(--accent); border-left: none;
+    }
+    .info-btn:hover .tooltip { opacity: 1; }
+
+    /* Canvas for orbit vis */
+    canvas { display: block; width: 100%; }
+
+    /* Trade matrix */
+    .trade-table { width: 100%; border-collapse: collapse; }
+    .trade-table th {
+      font-family: var(--mono); font-size: 0.6rem; letter-spacing: 1px; color: var(--muted);
+      text-transform: uppercase; padding: 0.5rem 0.75rem; text-align: left;
+      border-bottom: 1px solid var(--border); background: var(--surface2);
+    }
+    .trade-table td { padding: 0.5rem 0.75rem; font-size: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.03); }
+    .trade-table tr:hover td { background: rgba(255,255,255,0.02); }
+    .trade-score {
+      display: flex; align-items: center; gap: 0.4rem;
+    }
+    .score-pip { width: 8px; height: 8px; border-radius: 50%; }
+
+    /* Mass/Power chart */
+    .chart-bars { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 1rem; }
+    .chart-bar-row { display: flex; align-items: center; gap: 0.75rem; }
+    .chart-bar-label { font-size: 0.75rem; color: var(--muted); width: 70px; flex-shrink: 0; text-align: right; }
+    .chart-bar-track { flex: 1; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+    .chart-bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s; }
+    .chart-bar-val { font-family: var(--mono); font-size: 0.68rem; color: var(--muted); width: 50px; flex-shrink: 0; }
+
+    /* MDD output */
+    .mdd-output {
+      background: var(--surface2); border: 1px solid var(--accent);
+      border-radius: 10px; padding: 1.5rem; font-family: var(--mono); font-size: 0.78rem;
+      line-height: 1.9; color: var(--text);
+    }
+    .mdd-section { margin-bottom: 1rem; }
+    .mdd-heading { color: var(--accent); font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.4rem; }
+    .mdd-line { display: flex; justify-content: space-between; padding: 0.15rem 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
+    .mdd-key { color: var(--muted); }
+    .mdd-val { color: var(--white); }
+    .mdd-val.green { color: var(--accent); }
+    .mdd-val.amber { color: var(--warn); }
+    .mdd-val.red { color: var(--red); }
+
+    /* Score card */
+    .score-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.5rem; text-align: center; margin-bottom: 1.5rem;
+    }
+    .score-number { font-family: var(--mono); font-size: 3.5rem; font-weight: 700; color: var(--accent); line-height: 1; margin-bottom: 0.5rem; }
+    .score-label { font-size: 0.85rem; color: var(--muted); margin-bottom: 1rem; }
+    .score-badges { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; }
+    .score-badge {
+      font-size: 0.72rem; font-family: var(--mono); padding: 0.25rem 0.7rem;
+      border-radius: 100px; border: 1px solid;
+    }
+    .score-badge.pass { border-color: var(--accent); color: var(--accent); background: rgba(0,212,170,0.08); }
+    .score-badge.warn { border-color: var(--warn); color: var(--warn); background: rgba(245,158,11,0.08); }
+    .score-badge.fail { border-color: var(--red); color: var(--red); background: rgba(255,77,109,0.08); }
+
+    /* RIGHT: Mission Summary Panel */
+    .right-col { position: sticky; top: 80px; display: flex; flex-direction: column; gap: 1rem; }
+
+    .summary-box {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
+    }
+    .summary-header { padding: 0.85rem 1.25rem; border-bottom: 1px solid var(--border); background: var(--surface2); }
+    .summary-title { font-family: var(--mono); font-size: 0.65rem; letter-spacing: 2px; color: var(--accent); text-transform: uppercase; }
+    .summary-body { padding: 1rem 1.25rem; }
+    .summary-row { display: flex; justify-content: space-between; align-items: center; padding: 0.35rem 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
+    .summary-row:last-child { border-bottom: none; }
+    .summary-key { font-size: 0.75rem; color: var(--muted); }
+    .summary-val { font-family: var(--mono); font-size: 0.72rem; color: var(--white); }
+    .summary-val.accent { color: var(--accent); }
+    .summary-val.warn { color: var(--warn); }
+    .summary-val.red { color: var(--red); }
+
+    /* Health indicators */
+    .health-items { display: flex; flex-direction: column; gap: 0.5rem; }
+    .health-item { display: flex; align-items: center; gap: 0.6rem; }
+    .health-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; transition: background 0.3s; }
+    .health-item-label { font-size: 0.78rem; flex: 1; }
+    .health-item-val { font-family: var(--mono); font-size: 0.68rem; color: var(--muted); }
+
+    /* Nav buttons */
+    .step-nav { display: flex; gap: 1rem; margin-top: 1rem; }
+    .btn-next { background: var(--accent); color: var(--bg); padding: 0.75rem 2rem; border-radius: 6px; font-weight: 700; font-size: 0.9rem; cursor: pointer; border: none; font-family: var(--font); transition: opacity 0.2s, transform 0.2s; }
+    .btn-next:hover { opacity: 0.85; transform: translateY(-1px); }
+    .btn-back { background: none; border: 1px solid var(--border); color: var(--muted); padding: 0.75rem 1.5rem; border-radius: 6px; font-size: 0.9rem; cursor: pointer; font-family: var(--font); transition: all 0.2s; }
+    .btn-back:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-export { background: rgba(59,126,255,0.1); border: 1px solid var(--accent2); color: var(--accent2); padding: 0.75rem 1.5rem; border-radius: 6px; font-size: 0.88rem; cursor: pointer; font-family: var(--font); transition: all 0.2s; }
+    .btn-export:hover { background: rgba(59,126,255,0.2); }
+
+    /* Orbit preview canvas wrapper */
+    .orbit-preview { background: var(--surface2); border-radius: 8px; overflow: hidden; margin-bottom: 1rem; }
+
+    /* Constraint alerts */
+    .constraint-list { display: flex; flex-direction: column; gap: 0.5rem; }
+    .constraint-item { display: flex; gap: 0.6rem; align-items: flex-start; padding: 0.6rem 0.75rem; border-radius: 6px; font-size: 0.78rem; }
+    .constraint-item.ok { background: rgba(0,212,170,0.07); border: 1px solid rgba(0,212,170,0.2); color: var(--accent); }
+    .constraint-item.warn { background: rgba(245,158,11,0.07); border: 1px solid rgba(245,158,11,0.2); color: var(--warn); }
+    .constraint-item.fail { background: rgba(255,77,109,0.07); border: 1px solid rgba(255,77,109,0.2); color: var(--red); }
+
+    @media (max-width: 1000px) { .mission-layout { grid-template-columns: 1fr; } .right-col { position: static; } }
+    @media (max-width: 700px) { .stepper { overflow-x: auto; padding-bottom: 0.5rem; } .form-row { grid-template-columns: 1fr; } .option-grid { grid-template-columns: 1fr 1fr; } }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">SSL<span>.</span></div>
+  <div class="nav-bc">
+    <a href="modules.html">Modules</a>
+    <span class="sep">/</span>
+    <span>04 — Mission Design</span>
+  </div>
+  <div class="nav-right"><a href="modules.html">← Back to Modules</a></div>
+</nav>
+
+<div class="module-header">
+  <span class="module-tag">Module 04 — Capstone</span>
+  <h1>Mission<br>Design</h1>
+  <p>Design a complete CubeSat mission from scratch. Choose your objective, select your orbit, size your spacecraft, run trade studies, and generate a Mission Design Document. Everything you learned in Modules 1–3 comes together here.</p>
+  <div class="module-pills">
+    <span class="pill">Capstone</span>
+    <span class="pill">5-Step Workflow</span>
+    <span class="pill">MDD Generator</span>
+    <span class="pill">Advanced</span>
+  </div>
+</div>
+
+<!-- STEPPER -->
+<div class="stepper" id="stepper">
+  <!-- Built by JS -->
+</div>
+
+<div class="mission-layout">
+
+  <!-- LEFT: STEP PANELS -->
+  <div>
+
+    <!-- STEP 1: Mission Objective -->
+    <div class="step-panel active" id="step-1">
+      <div class="panel-card">
+        <div class="panel-card-header">
+          <span class="panel-card-title">// Step 1 — Mission Objective</span>
+          <span class="panel-card-sub">What does your satellite do?</span>
+        </div>
+        <div class="panel-card-body">
+          <h2>Define Your Mission</h2>
+          <p class="step-intro">Every spacecraft starts with a mission objective. This single decision drives everything else — your orbit, payload power, pointing accuracy, downlink bandwidth, and budget. Choose carefully.</p>
+
+          <div class="option-grid" id="mission-type-grid">
+            <div class="option-card" data-val="earth_obs" onclick="selectOption('mission_type', 'earth_obs', this)">
+              <div class="option-icon">🌍</div>
+              <div class="option-name">Earth Observation</div>
+              <div class="option-desc">Capture images or data about Earth's surface, atmosphere, or oceans.</div>
+              <span class="option-badge">→ LEO, Sun-Sync preferred</span>
+            </div>
+            <div class="option-card" data-val="weather" onclick="selectOption('mission_type', 'weather', this)">
+              <div class="option-icon">🌦️</div>
+              <div class="option-name">Weather Monitoring</div>
+              <div class="option-desc">Monitor atmospheric conditions, cloud cover, or storm tracking.</div>
+              <span class="option-badge">→ LEO or MEO</span>
+            </div>
+            <div class="option-card" data-val="comms" onclick="selectOption('mission_type', 'comms', this)">
+              <div class="option-icon">📶</div>
+              <div class="option-name">Communications</div>
+              <div class="option-desc">Store-and-forward messaging or IoT relay constellation.</div>
+              <span class="option-badge">→ LEO, global coverage</span>
+            </div>
+            <div class="option-card" data-val="ais" onclick="selectOption('mission_type', 'ais', this)">
+              <div class="option-icon">🚢</div>
+              <div class="option-name">AIS / Ship Tracking</div>
+              <div class="option-desc">Receive AIS transponder signals from ships for maritime tracking.</div>
+              <span class="option-badge">→ LEO, ~600 km</span>
+            </div>
+            <div class="option-card" data-val="tech_demo" onclick="selectOption('mission_type', 'tech_demo', this)">
+              <div class="option-icon">🔬</div>
+              <div class="option-name">Technology Demo</div>
+              <div class="option-desc">Test new hardware or software in the space environment.</div>
+              <span class="option-badge">→ Flexible orbit</span>
+            </div>
+            <div class="option-card" data-val="science" onclick="selectOption('mission_type', 'science', this)">
+              <div class="option-icon">⚗️</div>
+              <div class="option-name">Science / Research</div>
+              <div class="option-desc">Study space weather, radiation belts, or plasma physics.</div>
+              <span class="option-badge">→ Polar or elliptical</span>
+            </div>
+          </div>
+
+          <div class="form-row" style="margin-top:1.5rem">
+            <div class="form-group">
+              <label>Mission Name</label>
+              <input type="text" id="mission-name" placeholder="e.g. EduSat-1" oninput="updateMission('name', this.value)">
+            </div>
+            <div class="form-group">
+              <label>Organization</label>
+              <input type="text" id="mission-org" placeholder="e.g. Space Systems Lab" oninput="updateMission('org', this.value)">
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:1rem">
+            <label>Mission Statement</label>
+            <textarea id="mission-stmt" placeholder="Describe the primary goal of your mission in 1–2 sentences..." oninput="updateMission('statement', this.value)"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="step-nav">
+        <button class="btn-next" onclick="goStep(2)">Next: Orbit Selection →</button>
+      </div>
+    </div>
+
+    <!-- STEP 2: Orbit Selection -->
+    <div class="step-panel" id="step-2">
+      <div class="panel-card">
+        <div class="panel-card-header">
+          <span class="panel-card-title">// Step 2 — Orbit Selection</span>
+          <span class="panel-card-sub">Where does your satellite fly?</span>
+        </div>
+        <div class="panel-card-body">
+          <h2>Select Your Orbit</h2>
+          <p class="step-intro">Your orbit determines revisit time, coverage area, eclipse fraction, communication windows, and radiation environment. There's no single "best" orbit — it's always a trade-off driven by your mission requirements.</p>
+
+          <div class="option-grid" id="orbit-type-grid">
+            <div class="option-card" data-val="leo" onclick="selectOption('orbit_type', 'leo', this)">
+              <div class="option-icon">🌐</div>
+              <div class="option-name">LEO — 400–600 km</div>
+              <div class="option-desc">Low Earth Orbit. Short period, fast revisit, easier launch, high drag.</div>
+              <span class="option-badge">T ≈ 90–97 min</span>
+            </div>
+            <div class="option-card" data-val="sso" onclick="selectOption('orbit_type', 'sso', this)">
+              <div class="option-icon">☀️</div>
+              <div class="option-name">SSO — Sun-Synchronous</div>
+              <div class="option-desc">Passes over the same point at the same local time daily. Ideal for EO.</div>
+              <span class="option-badge">i ≈ 97–98°, ~600 km</span>
+            </div>
+            <div class="option-card" data-val="polar" onclick="selectOption('orbit_type', 'polar', this)">
+              <div class="option-icon">🧭</div>
+              <div class="option-name">Polar — 90° inclination</div>
+              <div class="option-desc">Covers entire globe over time. Good for global science missions.</div>
+              <span class="option-badge">Global coverage</span>
+            </div>
+            <div class="option-card" data-val="meo" onclick="selectOption('orbit_type', 'meo', this)">
+              <div class="option-icon">🛰️</div>
+              <div class="option-name">MEO — 2,000–20,000 km</div>
+              <div class="option-desc">Medium Earth Orbit. Longer period, larger footprint, higher radiation.</div>
+              <span class="option-badge">T ≈ 2–12 hrs</span>
+            </div>
+          </div>
+
+          <div style="margin-top:1.5rem">
+            <div class="slider-group">
+              <div class="slider-row">
+                <span class="slider-label">Altitude <button class="info-btn">i<div class="tooltip"><strong style="color:var(--accent)">Orbital Altitude</strong><br><br>Higher altitude means longer periods, larger ground footprints, but weaker signals and higher radiation. Launch costs also increase with altitude. Most CubeSats launch to 400–600 km as rideshares on commercial rockets.</div></button></span>
+                <span class="slider-val" id="alt-val">500 km</span>
+              </div>
+              <input type="range" id="orbit-alt" min="300" max="2000" value="500" step="50" oninput="updateOrbit()">
+              <div class="range-bounds"><span>300 km</span><span>2,000 km</span></div>
+            </div>
+            <div class="slider-group">
+              <div class="slider-row">
+                <span class="slider-label">Inclination <button class="info-btn">i<div class="tooltip"><strong style="color:var(--accent)">Orbital Inclination</strong><br><br>The angle between the orbital plane and Earth's equator. 0° = equatorial, 90° = polar. Higher inclination gives better coverage of high-latitude regions. SSO requires ~97–98° for most CubeSat altitudes.</div></button></span>
+                <span class="slider-val" id="inc-val">97.4°</span>
+              </div>
+              <input type="range" id="orbit-inc" min="0" max="98" value="97" step="0.5" oninput="updateOrbit()">
+              <div class="range-bounds"><span>0° (equatorial)</span><span>98° (SSO)</span></div>
+            </div>
+          </div>
+
+          <!-- Orbit preview canvas -->
+          <div class="orbit-preview">
+            <canvas id="orbitPreviewCanvas" height="200"></canvas>
+          </div>
+
+          <!-- Computed orbit parameters -->
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.75rem;margin-top:0.5rem">
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.9rem;text-align:center">
+              <div style="font-family:var(--mono);font-size:1rem;color:var(--accent)" id="orb-period">96.7 min</div>
+              <div style="font-size:0.72rem;color:var(--muted);margin-top:0.2rem">Orbital Period</div>
+            </div>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.9rem;text-align:center">
+              <div style="font-family:var(--mono);font-size:1rem;color:var(--accent2)" id="orb-passes">5.2 passes/day</div>
+              <div style="font-size:0.72rem;color:var(--muted);margin-top:0.2rem">GS Passes/Day</div>
+            </div>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.9rem;text-align:center">
+              <div style="font-family:var(--mono);font-size:1rem;color:var(--warn)" id="orb-eclipse">35.2%</div>
+              <div style="font-size:0.72rem;color:var(--muted);margin-top:0.2rem">Eclipse Fraction</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="step-nav">
+        <button class="btn-back" onclick="goStep(1)">← Back</button>
+        <button class="btn-next" onclick="goStep(3)">Next: Spacecraft Sizing →</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: Spacecraft Sizing -->
+    <div class="step-panel" id="step-3">
+      <div class="panel-card">
+        <div class="panel-card-header">
+          <span class="panel-card-title">// Step 3 — Spacecraft Sizing</span>
+          <span class="panel-card-sub">How big does it need to be?</span>
+        </div>
+        <div class="panel-card-body">
+          <h2>Size Your CubeSat</h2>
+          <p class="step-intro">CubeSats come in standard form factors: 1U (10×10×10 cm), 2U, 3U, and up to 12U or 16U. Bigger means more volume for payload and power, but more cost and mass. Size your spacecraft to meet your power and payload requirements.</p>
+
+          <div class="option-grid" style="grid-template-columns:repeat(4,1fr)">
+            <div class="option-card" onclick="selectOption('cubesat_size', '1U', this)">
+              <div class="option-icon">📦</div>
+              <div class="option-name">1U</div>
+              <div class="option-desc">100×100×113 mm · ~1.3 kg max</div>
+              <span class="option-badge">~2–3W power</span>
+            </div>
+            <div class="option-card" onclick="selectOption('cubesat_size', '2U', this)">
+              <div class="option-icon">📦</div>
+              <div class="option-name">2U</div>
+              <div class="option-desc">100×100×227 mm · ~2.6 kg max</div>
+              <span class="option-badge">~4–5W power</span>
+            </div>
+            <div class="option-card selected" onclick="selectOption('cubesat_size', '3U', this)">
+              <div class="option-icon">📦</div>
+              <div class="option-name">3U ★</div>
+              <div class="option-desc">100×100×340 mm · ~4 kg max</div>
+              <span class="option-badge">~6–8W power</span>
+            </div>
+            <div class="option-card" onclick="selectOption('cubesat_size', '6U', this)">
+              <div class="option-icon">📦</div>
+              <div class="option-name">6U</div>
+              <div class="option-desc">100×200×340 mm · ~8 kg max</div>
+              <span class="option-badge">~14–20W power</span>
+            </div>
+          </div>
+
+          <div style="margin-top:1.5rem;display:grid;grid-template-columns:1fr 1fr;gap:1.25rem">
+            <div>
+              <div class="slider-group">
+                <div class="slider-row">
+                  <span class="slider-label">Payload Power <button class="info-btn">i<div class="tooltip">How much power your instrument needs when active. This is usually the largest single consumer on a CubeSat and drives the solar panel and battery sizing.</div></button></span>
+                  <span class="slider-val" id="pay-pwr-val">1.5 W</span>
+                </div>
+                <input type="range" id="payload-power" min="0.1" max="10" value="1.5" step="0.1" oninput="updateSizing()">
+                <div class="range-bounds"><span>0.1 W</span><span>10 W</span></div>
+              </div>
+              <div class="slider-group">
+                <div class="slider-row">
+                  <span class="slider-label">Payload Mass <button class="info-btn">i<div class="tooltip">The mass of your instrument or sensor. This directly affects the total spacecraft mass, and therefore launch cost. Every gram costs money.</div></button></span>
+                  <span class="slider-val" id="pay-mass-val">350 g</span>
+                </div>
+                <input type="range" id="payload-mass" min="50" max="2000" value="350" step="10" oninput="updateSizing()">
+                <div class="range-bounds"><span>50 g</span><span>2,000 g</span></div>
+              </div>
+            </div>
+            <div>
+              <div class="slider-group">
+                <div class="slider-row">
+                  <span class="slider-label">Pointing Req. <button class="info-btn">i<div class="tooltip">How accurately the satellite must point at its target. EO cameras might need &lt;1°. A science sensor might tolerate 10°. Tighter pointing requires more capable (and expensive) ADCS hardware.</div></button></span>
+                  <span class="slider-val" id="point-req-val">5°</span>
+                </div>
+                <input type="range" id="pointing-req" min="0.5" max="30" value="5" step="0.5" oninput="updateSizing()">
+                <div class="range-bounds"><span>0.5° (precise)</span><span>30° (coarse)</span></div>
+              </div>
+              <div class="slider-group">
+                <div class="slider-row">
+                  <span class="slider-label">Data Volume/Pass</span>
+                  <span class="slider-val" id="data-vol-val">50 MB</span>
+                </div>
+                <input type="range" id="data-volume" min="1" max="500" value="50" step="1" oninput="updateSizing()">
+                <div class="range-bounds"><span>1 MB</span><span>500 MB</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mass/Power budget bars -->
+          <div class="panel-card" style="margin-top:1.25rem;margin-bottom:0">
+            <div class="panel-card-header">
+              <span class="panel-card-title">// Derived Budget</span>
+              <span class="panel-card-sub" id="sizing-feasibility">Checking feasibility...</span>
+            </div>
+            <div class="panel-card-body" style="padding:1rem 1.5rem">
+              <div class="chart-bars" id="mass-bars"></div>
+              <div style="margin-top:1.25rem">
+                <div class="chart-bars" id="power-bars"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="step-nav">
+        <button class="btn-back" onclick="goStep(2)">← Back</button>
+        <button class="btn-next" onclick="goStep(4)">Next: Trade Studies →</button>
+      </div>
+    </div>
+
+    <!-- STEP 4: Trade Studies -->
+    <div class="step-panel" id="step-4">
+      <div class="panel-card">
+        <div class="panel-card-header">
+          <span class="panel-card-title">// Step 4 — Trade Studies</span>
+          <span class="panel-card-sub">Evaluate your design choices</span>
+        </div>
+        <div class="panel-card-body">
+          <h2>Run Trade Studies</h2>
+          <p class="step-intro">A trade study systematically compares design options against weighted criteria. Engineers use these to make defensible decisions. Each option is scored on cost, complexity, power, heritage, and mission fit.</p>
+
+          <div style="margin-bottom:1.5rem">
+            <div class="panel-card-header" style="padding:0.75rem 0;border:none;border-bottom:1px solid var(--border)">
+              <span class="panel-card-title">// Attitude Control Actuators</span>
+            </div>
+            <table class="trade-table" id="adcs-trade">
+              <thead><tr><th>Option</th><th>Cost</th><th>Complexity</th><th>Power</th><th>Precision</th><th>Score</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+
+          <div style="margin-bottom:1.5rem">
+            <div class="panel-card-header" style="padding:0.75rem 0;border:none;border-bottom:1px solid var(--border)">
+              <span class="panel-card-title">// Communication Band</span>
+            </div>
+            <table class="trade-table" id="comms-trade">
+              <thead><tr><th>Option</th><th>Data Rate</th><th>Antenna Size</th><th>License</th><th>CubeSat Heritage</th><th>Score</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+
+          <div>
+            <div class="panel-card-header" style="padding:0.75rem 0;border:none;border-bottom:1px solid var(--border)">
+              <span class="panel-card-title">// Propulsion (if needed)</span>
+            </div>
+            <table class="trade-table" id="prop-trade">
+              <thead><tr><th>Option</th><th>ΔV</th><th>Mass</th><th>Power</th><th>Complexity</th><th>Score</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+
+          <div style="margin-top:1.5rem;padding:1rem;background:var(--surface2);border-radius:8px;border-left:2px solid var(--accent2)">
+            <div style="font-size:0.78rem;color:var(--muted);line-height:1.7">
+              <strong style="color:var(--white)">Note:</strong> Trade study scores are computed using a weighted scoring matrix based on your mission type and orbit selection from previous steps. Higher altitude missions weight communication band heritage more heavily; EO missions weight pointing precision for ADCS selection.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="step-nav">
+        <button class="btn-back" onclick="goStep(3)">← Back</button>
+        <button class="btn-next" onclick="goStep(5)">Next: Generate MDD →</button>
+      </div>
+    </div>
+
+    <!-- STEP 5: MDD Output -->
+    <div class="step-panel" id="step-5">
+      <div class="panel-card">
+        <div class="panel-card-header">
+          <span class="panel-card-title">// Step 5 — Mission Design Document</span>
+          <span class="panel-card-sub">Your completed mission design</span>
+        </div>
+        <div class="panel-card-body">
+          <h2>Mission Design Document</h2>
+          <p class="step-intro">This is your MDD — a structured summary of all design decisions made in this module. In a real mission, this would be a multi-hundred-page document. This is the executive summary.</p>
+
+          <div class="score-card">
+            <div class="score-number" id="final-score">--</div>
+            <div class="score-label">Mission Feasibility Score</div>
+            <div class="score-badges" id="score-badges"></div>
+          </div>
+
+          <div class="mdd-output" id="mdd-output">
+            <!-- Generated by JS -->
+          </div>
+
+          <div id="constraints-list" style="margin-top:1.25rem">
+            <!-- Constraint checks -->
+          </div>
+        </div>
+      </div>
+      <div class="step-nav">
+        <button class="btn-back" onclick="goStep(4)">← Back</button>
+        <button class="btn-export" onclick="exportMDD()">⬇ Export MDD as Text</button>
+        <button class="btn-next" onclick="window.location.href='modules.html'">Finish Module ✓</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: MISSION SUMMARY PANEL -->
+  <div class="right-col">
+
+    <div class="summary-box">
+      <div class="summary-header"><div class="summary-title">// Mission Summary</div></div>
+      <div class="summary-body" id="summary-body">
+        <div class="summary-row"><span class="summary-key">Name</span><span class="summary-val accent" id="sum-name">—</span></div>
+        <div class="summary-row"><span class="summary-key">Mission Type</span><span class="summary-val" id="sum-type">—</span></div>
+        <div class="summary-row"><span class="summary-key">Orbit</span><span class="summary-val" id="sum-orbit">—</span></div>
+        <div class="summary-row"><span class="summary-key">Altitude</span><span class="summary-val" id="sum-alt">—</span></div>
+        <div class="summary-row"><span class="summary-key">Inclination</span><span class="summary-val" id="sum-inc">—</span></div>
+        <div class="summary-row"><span class="summary-key">Period</span><span class="summary-val" id="sum-period">—</span></div>
+        <div class="summary-row"><span class="summary-key">Form Factor</span><span class="summary-val" id="sum-size">3U</span></div>
+        <div class="summary-row"><span class="summary-key">Total Mass</span><span class="summary-val" id="sum-mass">—</span></div>
+        <div class="summary-row"><span class="summary-key">Power Budget</span><span class="summary-val" id="sum-power">—</span></div>
+        <div class="summary-row"><span class="summary-key">Data/Day</span><span class="summary-val" id="sum-data">—</span></div>
+      </div>
+    </div>
+
+    <div class="summary-box">
+      <div class="summary-header"><div class="summary-title">// System Health</div></div>
+      <div class="summary-body">
+        <div class="health-items" id="health-items">
+          <div class="health-item">
+            <div class="health-dot" id="hd-power" style="background:var(--muted)"></div>
+            <span class="health-item-label">Power budget</span>
+            <span class="health-item-val" id="hv-power">—</span>
+          </div>
+          <div class="health-item">
+            <div class="health-dot" id="hd-mass" style="background:var(--muted)"></div>
+            <span class="health-item-label">Mass budget</span>
+            <span class="health-item-val" id="hv-mass">—</span>
+          </div>
+          <div class="health-item">
+            <div class="health-dot" id="hd-comms" style="background:var(--muted)"></div>
+            <span class="health-item-label">Comms link</span>
+            <span class="health-item-val" id="hv-comms">—</span>
+          </div>
+          <div class="health-item">
+            <div class="health-dot" id="hd-pointing" style="background:var(--muted)"></div>
+            <span class="health-item-label">Pointing budget</span>
+            <span class="health-item-val" id="hv-pointing">—</span>
+          </div>
+          <div class="health-item">
+            <div class="health-dot" id="hd-thermal" style="background:var(--muted)"></div>
+            <span class="health-item-label">Thermal margin</span>
+            <span class="health-item-val" id="hv-thermal">—</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="summary-box">
+      <div class="summary-header"><div class="summary-title">// Module Progress</div></div>
+      <div class="summary-body">
+        <div style="font-size:0.78rem;color:var(--muted);line-height:1.7;margin-bottom:0.75rem">
+          This is the capstone module. Review each concept before finalizing your MDD.
+        </div>
+        <div style="display:flex;flex-direction:column;gap:0.4rem">
+          <a href="module-01.html" style="font-size:0.78rem;color:var(--accent2);text-decoration:none;display:flex;justify-content:space-between">
+            <span>← Module 01: Orbital Mechanics</span><span>↗</span>
+          </a>
+          <a href="module-02.html" style="font-size:0.78rem;color:var(--accent2);text-decoration:none;display:flex;justify-content:space-between">
+            <span>← Module 02: Attitude Control</span><span>↗</span>
+          </a>
+          <a href="module-03.html" style="font-size:0.78rem;color:var(--accent2);text-decoration:none;display:flex;justify-content:space-between">
+            <span>← Module 03: CubeSat Systems</span><span>↗</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ================================================================
+// MISSION DESIGN — Module 04
+// Space Systems Lab
+// ================================================================
+
+// ===== STATE =====
+const mission = {
+  name: '',
+  org: '',
+  statement: '',
+  type: null,
+  orbitType: null,
+  altitude: 500,
+  inclination: 97,
+  size: '3U',
+  payloadPower: 1.5,
+  payloadMass: 350,
+  pointingReq: 5,
+  dataVolume: 50,
+  currentStep: 1,
+};
+
+const STEPS = [
+  { num: 1, label: 'Objective' },
+  { num: 2, label: 'Orbit' },
+  { num: 3, label: 'Sizing' },
+  { num: 4, label: 'Trades' },
+  { num: 5, label: 'MDD' },
+];
+
+const MISSION_TYPES = {
+  earth_obs: 'Earth Observation',
+  weather: 'Weather Monitoring',
+  comms: 'Communications',
+  ais: 'AIS / Ship Tracking',
+  tech_demo: 'Technology Demo',
+  science: 'Science / Research',
+};
+
+const ORBIT_TYPES = {
+  leo: 'LEO', sso: 'Sun-Synchronous (SSO)', polar: 'Polar', meo: 'MEO',
+};
+
+const SIZE_SPECS = {
+  '1U': { mass: 1300, power: 2.5, vol: '1L' },
+  '2U': { mass: 2600, power: 4.5, vol: '2L' },
+  '3U': { mass: 4000, power: 7.0, vol: '3L' },
+  '6U': { mass: 8000, power: 18,  vol: '6L' },
+};
+
+// ===== STEPPER =====
+function buildStepper() {
+  const el = document.getElementById('stepper');
+  el.innerHTML = STEPS.map((s, i) => `
+    <div class="step-wrapper" onclick="goStep(${s.num})" style="cursor:pointer">
+      <div class="step-circle ${mission.currentStep === s.num ? 'active' : mission.currentStep > s.num ? 'done' : ''}" id="sc-${s.num}">
+        ${mission.currentStep > s.num ? '✓' : s.num}
+      </div>
+      <span class="step-label ${mission.currentStep === s.num ? 'active' : ''}">${s.label}</span>
+    </div>
+    ${i < STEPS.length - 1 ? `<div class="step-line ${mission.currentStep > s.num ? 'done' : ''}" id="sl-${s.num}"></div>` : ''}
+  `).join('');
+}
+
+function goStep(n) {
+  document.getElementById(`step-${mission.currentStep}`).classList.remove('active');
+  mission.currentStep = n;
+  document.getElementById(`step-${n}`).classList.add('active');
+  buildStepper();
+  updateSummary();
+  if (n === 2) { updateOrbit(); drawOrbitPreview(); }
+  if (n === 3) { updateSizing(); }
+  if (n === 4) { buildTrades(); }
+  if (n === 5) { generateMDD(); }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ===== OPTION SELECTION =====
+function selectOption(key, val, el) {
+  // Deselect all in same group
+  const grid = el.closest('.option-grid');
+  grid.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected', 'selected-blue'));
+  el.classList.add('selected');
+  mission[key] = val;
+
+  // Auto-set orbit based on mission type
+  if (key === 'mission_type') {
+    const autoOrbits = { earth_obs: 'sso', weather: 'sso', comms: 'leo', ais: 'leo', tech_demo: 'leo', science: 'polar' };
+    if (autoOrbits[val]) mission.orbitType = autoOrbits[val];
+  }
+
+  updateSummary();
+  updateHealthDots();
+}
+
+// ===== MISSION FIELDS =====
+function updateMission(key, val) {
+  mission[key] = val;
+  updateSummary();
+}
+
+// ===== ORBIT =====
+function updateOrbit() {
+  const alt = parseInt(document.getElementById('orbit-alt').value);
+  const inc = parseFloat(document.getElementById('orbit-inc').value);
+  mission.altitude = alt;
+  mission.inclination = inc;
+
+  document.getElementById('alt-val').textContent = alt + ' km';
+  document.getElementById('inc-val').textContent = inc.toFixed(1) + '°';
+
+  // Compute orbital parameters
+  const R = 6371, G = 3.986e14;
+  const r = (R + alt) * 1e3;
+  const T = 2 * Math.PI * Math.sqrt(r * r * r / G);
+  const Tmin = (T / 60).toFixed(1);
+  const passes = (24 * 60 / T * 60 * 5 / (24 * 60) * (inc > 45 ? 5.5 : 3)).toFixed(1);
+  const eclipse = (35 + (alt - 300) / 1700 * 5).toFixed(1);
+
+  document.getElementById('orb-period').textContent = Tmin + ' min';
+  document.getElementById('orb-passes').textContent = (5 + (alt < 600 ? 0.5 : -0.5)).toFixed(1) + ' passes/day';
+  document.getElementById('orb-eclipse').textContent = eclipse + '%';
+
+  updateSummary();
+  drawOrbitPreview();
+  updateHealthDots();
+}
+
+// ===== ORBIT PREVIEW CANVAS =====
+function drawOrbitPreview() {
+  const cv = document.getElementById('orbitPreviewCanvas');
+  if (!cv) return;
+  const W = cv.parentElement.clientWidth || 600;
+  cv.width = W; cv.height = 200;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = '#060810';
+  ctx.fillRect(0, 0, W, 200);
+
+  // Stars
+  for (let i = 0; i < 60; i++) {
+    ctx.beginPath();
+    ctx.arc(Math.random() * W, Math.random() * 200, Math.random() * 0.8, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(180,200,240,0.3)';
+    ctx.fill();
+  }
+
+  const cx = W / 2, cy = 100;
+  const alt = mission.altitude;
+
+  // Earth
+  const eR = 42;
+  const earthGrad = ctx.createRadialGradient(cx - 10, cy - 10, 5, cx, cy, eR);
+  earthGrad.addColorStop(0, '#3a90e8');
+  earthGrad.addColorStop(1, '#0f3d82');
+  ctx.beginPath(); ctx.arc(cx, cy, eR, 0, Math.PI * 2);
+  ctx.fillStyle = earthGrad; ctx.fill();
+  ctx.beginPath(); ctx.arc(cx, cy, eR + 3, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(100,180,255,0.2)'; ctx.lineWidth = 2; ctx.stroke();
+
+  // Orbit path
+  const maxAlt = 2000;
+  const maxR = 88;
+  const orbitR = eR + (alt - 300) / (maxAlt - 300) * (maxR - eR);
+
+  // Draw orbit ellipse based on inclination (visual tilt)
+  const inc = mission.inclination;
+  const tilt = Math.sin(inc * Math.PI / 180) * 0.35;
+  ctx.save();
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, orbitR, orbitR * (0.4 + tilt * 0.6), 0, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(0,212,170,0.5)';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  // Satellite position
+  const t = Date.now() / 3000;
+  const sx = cx + orbitR * Math.cos(t);
+  const sy = cy + orbitR * (0.4 + tilt * 0.6) * Math.sin(t);
+  ctx.beginPath(); ctx.arc(sx, sy, 4, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(0,212,170,0.9)'; ctx.fill();
+
+  ctx.restore();
+
+  // Labels
+  ctx.fillStyle = 'rgba(100,120,160,0.6)';
+  ctx.font = "9px 'Space Mono'";
+  ctx.textAlign = 'center';
+  ctx.fillText(`${alt} km orbit · ${inc.toFixed(1)}° inc`, cx, 190);
+}
+
+// ===== SIZING =====
+function updateSizing() {
+  const pp = parseFloat(document.getElementById('payload-power').value);
+  const pm = parseInt(document.getElementById('payload-mass').value);
+  const pr = parseFloat(document.getElementById('pointing-req').value);
+  const dv = parseInt(document.getElementById('data-volume').value);
+
+  mission.payloadPower = pp;
+  mission.payloadMass = pm;
+  mission.pointingReq = pr;
+  mission.dataVolume = dv;
+
+  document.getElementById('pay-pwr-val').textContent = pp.toFixed(1) + ' W';
+  document.getElementById('pay-mass-val').textContent = pm + ' g';
+  document.getElementById('point-req-val').textContent = pr + '°';
+  document.getElementById('data-vol-val').textContent = dv + ' MB';
+
+  const spec = SIZE_SPECS[mission.size] || SIZE_SPECS['3U'];
+  const busMass = spec.mass * 0.6; // bus = 60% of max
+  const totalMass = busMass + pm;
+  const massFit = totalMass <= spec.mass;
+
+  const busPower = 2.5;
+  const totalPower = pp + busPower;
+  const genPower = spec.power;
+  const powerOK = totalPower <= genPower * 0.85;
+
+  // Mass bars
+  const massBars = [
+    { label: 'Bus', val: busMass, max: spec.mass, color: '#3b7eff' },
+    { label: 'Payload', val: pm, max: spec.mass, color: '#ec4899' },
+    { label: 'Total', val: totalMass, max: spec.mass, color: massFit ? '#00d4aa' : '#ff4d6d' },
+  ];
+  document.getElementById('mass-bars').innerHTML = massBars.map(b => `
+    <div style="font-size:0.68rem;color:var(--muted);font-family:var(--mono);margin-bottom:0.15rem">MASS BUDGET</div>
+    ${massBars.map(b => `
+    <div class="chart-bar-row">
+      <span class="chart-bar-label">${b.label}</span>
+      <div class="chart-bar-track"><div class="chart-bar-fill" style="width:${Math.min(100, b.val / b.max * 100)}%;background:${b.color}"></div></div>
+      <span class="chart-bar-val">${b.val}g / ${b.max}g</span>
+    </div>`).join('')}
+  `).join('');
+
+  const powerBars = [
+    { label: 'Bus', val: busPower, max: genPower, color: '#f59e0b' },
+    { label: 'Payload', val: pp, max: genPower, color: '#ec4899' },
+    { label: 'Total', val: totalPower, max: genPower, color: powerOK ? '#00d4aa' : '#ff4d6d' },
+    { label: 'Generated', val: genPower, max: genPower, color: '#3b7eff' },
+  ];
+  document.getElementById('power-bars').innerHTML = `
+    <div style="font-size:0.68rem;color:var(--muted);font-family:var(--mono);margin-bottom:0.15rem">POWER BUDGET</div>
+    ${powerBars.map(b => `
+    <div class="chart-bar-row">
+      <span class="chart-bar-label">${b.label}</span>
+      <div class="chart-bar-track"><div class="chart-bar-fill" style="width:${Math.min(100,b.val/b.max*100)}%;background:${b.color}"></div></div>
+      <span class="chart-bar-val">${b.val.toFixed(1)}W</span>
+    </div>`).join('')}
+  `;
+
+  document.getElementById('sizing-feasibility').textContent =
+    (massFit && powerOK) ? '✓ Feasible' : '⚠ Budget exceeded — consider larger form factor';
+  document.getElementById('sizing-feasibility').style.color = (massFit && powerOK) ? 'var(--accent)' : 'var(--warn)';
+
+  updateSummary();
+  updateHealthDots();
+}
+
+// ===== TRADE STUDIES =====
+const TRADE_DATA = {
+  adcs: [
+    { name: 'Magnetorquers only', cost: '●○○', complexity: '●○○', power: '●○○', precision: '●○○', score: 3 },
+    { name: 'MTQ + Reaction Wheel', cost: '●●○', complexity: '●●○', power: '●●○', precision: '●●●', score: 5 },
+    { name: 'Full ADCS + Star Tracker', cost: '●●●', complexity: '●●●', power: '●●●', precision: '●●●', score: 4 },
+    { name: 'Passive (gravity gradient)', cost: '○○○', complexity: '○○○', power: '○○○', precision: '●○○', score: 2 },
+  ],
+  comms: [
+    { name: 'UHF/VHF (437 MHz)', dataRate: '9.6 kbps', antenna: 'Dipole', license: 'Amateur', heritage: '●●●', score: 5 },
+    { name: 'S-band (2.4 GHz)', dataRate: '1–10 Mbps', antenna: 'Patch', license: 'Commercial', heritage: '●●○', score: 4 },
+    { name: 'X-band (8 GHz)', dataRate: '10–100 Mbps', antenna: 'High gain', license: 'Regulated', heritage: '●○○', score: 3 },
+    { name: 'Optical / Laser', dataRate: '>1 Gbps', antenna: 'Telescope', license: 'None', heritage: '○○○', score: 2 },
+  ],
+  prop: [
+    { name: 'No propulsion', dv: '0 m/s', mass: '0 g', power: '0 W', complexity: '○○○', score: 4 },
+    { name: 'Cold gas (N₂)', dv: '10–50 m/s', mass: '200–500 g', power: '5 W', complexity: '●○○', score: 3 },
+    { name: 'Electrospray (MEMS)', dv: '50–200 m/s', mass: '100–300 g', power: '10 W', complexity: '●●○', score: 3 },
+    { name: 'Butane propulsion', dv: '30–100 m/s', mass: '300–800 g', power: '8 W', complexity: '●●○', score: 3 },
+  ],
+};
+
+function pips(str) {
+  return str.split('').map(c => `<span style="color:${c==='●'?'var(--accent)':'var(--border)'}">${c}</span>`).join('');
+}
+
+function scoreColor(s) {
+  return s >= 4 ? 'var(--accent)' : s >= 3 ? 'var(--warn)' : 'var(--muted)';
+}
+
+function buildTrades() {
+  // Highlight recommended based on mission
+  const recADCS = mission.pointingReq < 5 ? 1 : mission.pointingReq < 15 ? 1 : 3;
+  const recComms = mission.dataVolume > 100 ? 1 : 0;
+
+  const adcsTbody = document.querySelector('#adcs-trade tbody');
+  adcsTbody.innerHTML = TRADE_DATA.adcs.map((r, i) => `
+    <tr style="${i === recADCS ? 'background:rgba(0,212,170,0.05)' : ''}">
+      <td style="color:var(--white)">${r.name}${i === recADCS ? ' <span style="font-size:0.65rem;color:var(--accent)">← Recommended</span>' : ''}</td>
+      <td>${pips(r.cost)}</td>
+      <td>${pips(r.complexity)}</td>
+      <td>${pips(r.power)}</td>
+      <td>${pips(r.precision)}</td>
+      <td style="color:${scoreColor(r.score)};font-family:var(--mono)">${r.score}/5</td>
+    </tr>`).join('');
+
+  const commsTbody = document.querySelector('#comms-trade tbody');
+  commsTbody.innerHTML = TRADE_DATA.comms.map((r, i) => `
+    <tr style="${i === recComms ? 'background:rgba(0,212,170,0.05)' : ''}">
+      <td style="color:var(--white)">${r.name}${i === recComms ? ' <span style="font-size:0.65rem;color:var(--accent)">← Recommended</span>' : ''}</td>
+      <td style="font-family:var(--mono);font-size:0.75rem">${r.dataRate}</td>
+      <td>${r.antenna}</td>
+      <td>${r.license}</td>
+      <td>${pips(r.heritage)}</td>
+      <td style="color:${scoreColor(r.score)};font-family:var(--mono)">${r.score}/5</td>
+    </tr>`).join('');
+
+  const propTbody = document.querySelector('#prop-trade tbody');
+  propTbody.innerHTML = TRADE_DATA.prop.map((r, i) => `
+    <tr>
+      <td style="color:var(--white)">${r.name}</td>
+      <td style="font-family:var(--mono);font-size:0.75rem;color:var(--accent2)">${r.dv}</td>
+      <td style="font-family:var(--mono);font-size:0.75rem">${r.mass}</td>
+      <td style="font-family:var(--mono);font-size:0.75rem">${r.power}</td>
+      <td>${pips(r.complexity)}</td>
+      <td style="color:${scoreColor(r.score)};font-family:var(--mono)">${r.score}/5</td>
+    </tr>`).join('');
+}
+
+// ===== MDD GENERATION =====
+function generateMDD() {
+  const spec = SIZE_SPECS[mission.size] || SIZE_SPECS['3U'];
+  const busMass = spec.mass * 0.6;
+  const totalMass = busMass + mission.payloadMass;
+  const totalPower = mission.payloadPower + 2.5;
+  const genPower = spec.power;
+  const R = 6371, G = 3.986e14;
+  const r = (R + mission.altitude) * 1e3;
+  const T = 2 * Math.PI * Math.sqrt(r * r * r / G);
+  const Tmin = (T / 60).toFixed(1);
+  const dataPerDay = (mission.dataVolume * 5).toFixed(0);
+
+  // Feasibility checks
+  const checks = [
+    { label: 'Power margin', ok: totalPower < genPower * 0.85, val: `${((1 - totalPower / genPower) * 100).toFixed(0)}% margin` },
+    { label: 'Mass budget', ok: totalMass < spec.mass * 0.95, val: `${totalMass}g / ${spec.mass}g` },
+    { label: 'Pointing capability', ok: mission.pointingReq >= 3, val: mission.pointingReq < 3 ? 'Sub-3° requires star tracker' : `${mission.pointingReq}° — achievable` },
+    { label: 'Downlink capacity', ok: parseFloat(dataPerDay) < 500, val: `${dataPerDay} MB/day` },
+    { label: 'Mission type defined', ok: !!mission.type, val: mission.type ? MISSION_TYPES[mission.type] : 'Not selected' },
+    { label: 'Orbit defined', ok: !!mission.orbitType, val: mission.orbitType ? ORBIT_TYPES[mission.orbitType] : 'Not selected' },
+  ];
+
+  const passed = checks.filter(c => c.ok).length;
+  const score = Math.round((passed / checks.length) * 100);
+
+  document.getElementById('final-score').textContent = score + '%';
+  document.getElementById('final-score').style.color = score >= 80 ? 'var(--accent)' : score >= 50 ? 'var(--warn)' : 'var(--red)';
+
+  const badges = [
+    score >= 80 ? { text: '✓ Feasible', cls: 'pass' } : score >= 50 ? { text: '⚠ Needs Review', cls: 'warn' } : { text: '✗ Critical Issues', cls: 'fail' },
+    totalPower < genPower * 0.85 ? { text: 'Power OK', cls: 'pass' } : { text: 'Power Over Budget', cls: 'fail' },
+    totalMass < spec.mass ? { text: 'Mass OK', cls: 'pass' } : { text: 'Mass Over Budget', cls: 'fail' },
+    mission.type ? { text: MISSION_TYPES[mission.type], cls: 'pass' } : { text: 'Type Undefined', cls: 'warn' },
+  ];
+  document.getElementById('score-badges').innerHTML = badges.map(b => `<span class="score-badge ${b.cls}">${b.text}</span>`).join('');
+
+  // MDD content
+  const mdd = document.getElementById('mdd-output');
+  mdd.innerHTML = `
+    <div class="mdd-section">
+      <div class="mdd-heading">1. Mission Identification</div>
+      <div class="mdd-line"><span class="mdd-key">Mission Name</span><span class="mdd-val green">${mission.name || '[Unnamed]'}</span></div>
+      <div class="mdd-line"><span class="mdd-key">Organization</span><span class="mdd-val">${mission.org || '—'}</span></div>
+      <div class="mdd-line"><span class="mdd-key">Mission Type</span><span class="mdd-val">${mission.type ? MISSION_TYPES[mission.type] : '—'}</span></div>
+      <div class="mdd-line"><span class="mdd-key">Objective</span><span class="mdd-val" style="max-width:220px;text-align:right;font-size:0.7rem">${mission.statement || '—'}</span></div>
+    </div>
+    <div class="mdd-section">
+      <div class="mdd-heading">2. Orbital Parameters</div>
+      <div class="mdd-line"><span class="mdd-key">Orbit Type</span><span class="mdd-val">${mission.orbitType ? ORBIT_TYPES[mission.orbitType] : '—'}</span></div>
+      <div class="mdd-line"><span class="mdd-key">Altitude</span><span class="mdd-val green">${mission.altitude} km</span></div>
+      <div class="mdd-line"><span class="mdd-key">Inclination</span><span class="mdd-val">${mission.inclination.toFixed(1)}°</span></div>
+      <div class="mdd-line"><span class="mdd-key">Orbital Period</span><span class="mdd-val">${Tmin} min</span></div>
+      <div class="mdd-line"><span class="mdd-key">Eclipse Fraction</span><span class="mdd-val">${(35 + (mission.altitude - 300) / 1700 * 5).toFixed(1)}%</span></div>
+      <div class="mdd-line"><span class="mdd-key">GS Passes/Day</span><span class="mdd-val">~5.2</span></div>
+    </div>
+    <div class="mdd-section">
+      <div class="mdd-heading">3. Spacecraft Configuration</div>
+      <div class="mdd-line"><span class="mdd-key">Form Factor</span><span class="mdd-val green">${mission.size} CubeSat</span></div>
+      <div class="mdd-line"><span class="mdd-key">Max Mass Budget</span><span class="mdd-val">${spec.mass}g</span></div>
+      <div class="mdd-line"><span class="mdd-key">Bus Mass (est.)</span><span class="mdd-val">${busMass}g</span></div>
+      <div class="mdd-line"><span class="mdd-key">Payload Mass</span><span class="mdd-val">${mission.payloadMass}g</span></div>
+      <div class="mdd-line"><span class="mdd-key">Total Mass (est.)</span><span class="mdd-val ${totalMass < spec.mass ? 'green' : 'red'}">${totalMass}g</span></div>
+    </div>
+    <div class="mdd-section">
+      <div class="mdd-heading">4. Power Budget</div>
+      <div class="mdd-line"><span class="mdd-key">Solar Generation</span><span class="mdd-val green">${genPower}W avg</span></div>
+      <div class="mdd-line"><span class="mdd-key">Bus Consumption</span><span class="mdd-val">2.5W</span></div>
+      <div class="mdd-line"><span class="mdd-key">Payload Power</span><span class="mdd-val">${mission.payloadPower.toFixed(1)}W</span></div>
+      <div class="mdd-line"><span class="mdd-key">Total Consumption</span><span class="mdd-val ${totalPower < genPower * 0.85 ? 'green' : 'red'}">${totalPower.toFixed(1)}W</span></div>
+      <div class="mdd-line"><span class="mdd-key">Power Margin</span><span class="mdd-val ${totalPower < genPower * 0.85 ? 'green' : 'red'}">${((1 - totalPower / genPower) * 100).toFixed(0)}%</span></div>
+    </div>
+    <div class="mdd-section">
+      <div class="mdd-heading">5. Pointing & ADCS</div>
+      <div class="mdd-line"><span class="mdd-key">Pointing Requirement</span><span class="mdd-val">${mission.pointingReq}°</span></div>
+      <div class="mdd-line"><span class="mdd-key">Recommended ADCS</span><span class="mdd-val">${mission.pointingReq < 5 ? 'RW + MTQ' : 'Magnetorquers'}</span></div>
+      <div class="mdd-line"><span class="mdd-key">Detumble Mode</span><span class="mdd-val">B-dot Algorithm</span></div>
+    </div>
+    <div class="mdd-section">
+      <div class="mdd-heading">6. Communications</div>
+      <div class="mdd-line"><span class="mdd-key">Recommended Band</span><span class="mdd-val">${mission.dataVolume > 100 ? 'S-band' : 'UHF (437 MHz)'}</span></div>
+      <div class="mdd-line"><span class="mdd-key">Data Volume/Pass</span><span class="mdd-val">${mission.dataVolume} MB</span></div>
+      <div class="mdd-line"><span class="mdd-key">Estimated Data/Day</span><span class="mdd-val green">${dataPerDay} MB</span></div>
+    </div>
+  `;
+
+  // Constraint list
+  document.getElementById('constraints-list').innerHTML = `
+    <div style="font-family:var(--mono);font-size:0.6rem;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:0.75rem">// Feasibility Checks</div>
+    <div class="constraint-list">
+      ${checks.map(c => `
+        <div class="constraint-item ${c.ok ? 'ok' : 'warn'}">
+          <span>${c.ok ? '✓' : '⚠'}</span>
+          <div><span style="font-weight:700">${c.label}</span> — ${c.val}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+// ===== SUMMARY PANEL =====
+function updateSummary() {
+  setText('sum-name', mission.name || '—');
+  setText('sum-type', mission.type ? MISSION_TYPES[mission.type] : '—');
+  setText('sum-orbit', mission.orbitType ? ORBIT_TYPES[mission.orbitType] : '—');
+  setText('sum-alt', mission.altitude ? mission.altitude + ' km' : '—');
+  setText('sum-inc', mission.inclination ? mission.inclination.toFixed(1) + '°' : '—');
+  const R = 6371, G = 3.986e14;
+  const r = (R + mission.altitude) * 1e3;
+  const T = (2 * Math.PI * Math.sqrt(r * r * r / G) / 60).toFixed(1);
+  setText('sum-period', T + ' min');
+  setText('sum-size', mission.size);
+  const spec = SIZE_SPECS[mission.size] || SIZE_SPECS['3U'];
+  const totalMass = spec.mass * 0.6 + mission.payloadMass;
+  setText('sum-mass', totalMass + 'g / ' + spec.mass + 'g');
+  setText('sum-power', (mission.payloadPower + 2.5).toFixed(1) + 'W / ' + spec.power + 'W');
+  setText('sum-data', (mission.dataVolume * 5) + ' MB/day');
+}
+
+function updateHealthDots() {
+  const spec = SIZE_SPECS[mission.size] || SIZE_SPECS['3U'];
+  const totalPower = mission.payloadPower + 2.5;
+  const powerOK = totalPower < spec.power * 0.85;
+  const totalMass = spec.mass * 0.6 + mission.payloadMass;
+  const massOK = totalMass < spec.mass;
+  const commsOK = mission.dataVolume < 200;
+  const pointingOK = mission.pointingReq >= 3;
+  const thermalOK = true;
+
+  setHealth('power', powerOK, (((spec.power - totalPower) / spec.power) * 100).toFixed(0) + '% margin');
+  setHealth('mass', massOK, (totalMass) + 'g');
+  setHealth('comms', commsOK, mission.dataVolume + ' MB/pass');
+  setHealth('pointing', pointingOK, mission.pointingReq + '°');
+  setHealth('thermal', thermalOK, 'Passive OK');
+}
+
+function setHealth(id, ok, val) {
+  const dot = document.getElementById('hd-' + id);
+  const valEl = document.getElementById('hv-' + id);
+  if (dot) dot.style.background = ok ? 'var(--accent)' : 'var(--red)';
+  if (valEl) { valEl.textContent = val; valEl.style.color = ok ? 'var(--accent)' : 'var(--red)'; }
+}
+
+function setText(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+// ===== EXPORT =====
+function exportMDD() {
+  const spec = SIZE_SPECS[mission.size] || SIZE_SPECS['3U'];
+  const text = `MISSION DESIGN DOCUMENT
+Space Systems Lab — Module 04 Output
+Generated: ${new Date().toLocaleDateString()}
+${'='.repeat(50)}
+
+MISSION: ${mission.name || '[Unnamed]'}
+ORGANIZATION: ${mission.org || '—'}
+TYPE: ${mission.type ? MISSION_TYPES[mission.type] : '—'}
+OBJECTIVE: ${mission.statement || '—'}
+
+ORBITAL PARAMETERS
+------------------
+Orbit Type:   ${mission.orbitType ? ORBIT_TYPES[mission.orbitType] : '—'}
+Altitude:     ${mission.altitude} km
+Inclination:  ${mission.inclination.toFixed(1)}°
+Period:       ${(2 * Math.PI * Math.sqrt(Math.pow((6371 + mission.altitude) * 1e3, 3) / 3.986e14) / 60).toFixed(1)} min
+
+SPACECRAFT
+----------
+Form Factor:  ${mission.size} CubeSat
+Total Mass:   ${spec.mass * 0.6 + mission.payloadMass}g / ${spec.mass}g max
+Total Power:  ${(mission.payloadPower + 2.5).toFixed(1)}W / ${spec.power}W generated
+
+PAYLOAD
+-------
+Payload Power:  ${mission.payloadPower.toFixed(1)}W
+Payload Mass:   ${mission.payloadMass}g
+Pointing Req:   ${mission.pointingReq}°
+Data/Pass:      ${mission.dataVolume} MB
+
+${'='.repeat(50)}
+Generated by Space Systems Lab — spacesystemslab.edu
+`;
+  const blob = new Blob([text], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = (mission.name || 'mission') + '-MDD.txt';
+  a.click();
+}
+
+// ===== ORBIT PREVIEW ANIMATION =====
+function animateOrbitPreview() {
+  if (mission.currentStep === 2) drawOrbitPreview();
+  requestAnimationFrame(animateOrbitPreview);
+}
+
+// ===== INIT =====
+buildStepper();
+updateSummary();
+updateHealthDots();
+animateOrbitPreview();
+
+// Default state
+mission.altitude = 500;
+mission.inclination = 97;
+mission.size = '3U';
+mission.payloadPower = 1.5;
+mission.payloadMass = 350;
+mission.pointingReq = 5;
+mission.dataVolume = 50;
+</script>
+</body>
+</html>
