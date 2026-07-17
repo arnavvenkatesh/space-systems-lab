@@ -98,6 +98,7 @@
       padding: 1.5rem;
       position: sticky;
       top: 80px;
+      z-index: 10; 
     }
     .panel-title {
       font-family: var(--mono); font-size: 0.65rem; letter-spacing: 3px;
@@ -131,6 +132,7 @@
       line-height: 1.6; z-index: 400; pointer-events: none; opacity: 0;
       transition: opacity 0.2s; font-family: var(--font); font-weight: 400;
       box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+      text-align: left;
     }
     .info-btn .tooltip::before {
       content: ''; position: absolute; left: -6px; top: 50%; transform: translateY(-50%);
@@ -159,8 +161,6 @@
       font-size: 0.75rem; font-family: var(--font); cursor: pointer; transition: all 0.2s; text-align: center;
     }
     .toggle-btn.active { background: rgba(0,212,170,0.12); border-color: var(--accent); color: var(--accent); }
-    .toggle-btn.active-blue { background: rgba(59,126,255,0.12); border-color: var(--accent2); color: var(--accent2); }
-    .toggle-btn.active-warn { background: rgba(245,158,11,0.12); border-color: var(--warn); color: var(--warn); }
 
     /* Thruster buttons */
     .thruster-grid {
@@ -326,8 +326,8 @@
   <div class="module-pills">
     <span class="pill">Interactive</span>
     <span class="pill">2D Simulation</span>
+    <span class="pill">Accurate Dynamics</span>
     <span class="pill">Keyboard Controls</span>
-    <span class="pill">Intermediate</span>
   </div>
 </div>
 
@@ -349,18 +349,18 @@
       <div class="control-group">
         <div class="control-label-row">
           <div class="control-label">
-            Reaction Wheel
+            Reaction Wheel Speed
             <button class="info-btn" tabindex="-1">i
               <div class="tooltip">
                 <strong style="color:var(--accent)">Reaction Wheel</strong><br><br>
-                A spinning flywheel inside the spacecraft. By speeding it up or slowing it down, angular momentum is transferred to the spacecraft body — causing it to rotate in the opposite direction. No fuel needed. Used in most modern satellites.
+                A spinning flywheel inside the spacecraft. Motor torque accelerates the wheel. Thanks to Conservation of Angular Momentum, an equal and opposite torque rotates the spacecraft body.
               </div>
             </button>
           </div>
-          <span class="control-value" id="rw-display">0 RPM</span>
+          <span class="control-value" id="rw-display">Target: 0 RPM</span>
         </div>
         <input type="range" id="rw-speed" min="-100" max="100" value="0" step="1">
-        <div class="range-bounds"><span>← CCW torque</span><span>CW torque →</span></div>
+        <div class="range-bounds"><span>← Target CCW</span><span>Target CW →</span></div>
       </div>
 
       <div class="control-group">
@@ -370,7 +370,7 @@
             <button class="info-btn" tabindex="-1">i
               <div class="tooltip">
                 <strong style="color:var(--accent)">Magnetorquer</strong><br><br>
-                An electromagnet inside the spacecraft that interacts with Earth's magnetic field to produce a torque. Very power-efficient and commonly used in CubeSats. Weaker than reaction wheels but requires no moving parts.
+                An electromagnet that pushes against Earth's magnetic field. Very weak torque compared to thrusters, but requires no fuel.
               </div>
             </button>
           </div>
@@ -387,7 +387,7 @@
             <button class="info-btn" tabindex="-1">i
               <div class="tooltip">
                 <strong style="color:var(--accent)">Attitude Thrusters</strong><br><br>
-                Small rocket nozzles arranged in pairs around the spacecraft. Firing opposite pairs creates a pure torque (rotation without translation). Fast and powerful, but uses propellant — a limited resource.
+                Small rocket nozzles arranged in pairs. Firing opposite pairs creates a pure torque (rotation). Fast and powerful, but uses finite propellant.
               </div>
             </button>
           </div>
@@ -405,12 +405,6 @@
         <div class="control-label-row">
           <div class="control-label">
             Target Angle
-            <button class="info-btn" tabindex="-1">i
-              <div class="tooltip">
-                <strong style="color:var(--accent)">Target Pointing</strong><br><br>
-                Set a desired pointing angle. The green arrow shows where the spacecraft should be pointing. In Manual mode, you control it yourself. Switch to PID Auto to watch the controller drive the error to zero automatically.
-              </div>
-            </button>
           </div>
           <span class="control-value" id="target-display">0°</span>
         </div>
@@ -429,7 +423,7 @@
             <button class="info-btn" tabindex="-1">i
               <div class="tooltip">
                 <strong style="color:var(--accent)">PID Controller</strong><br><br>
-                Proportional–Integral–Derivative control. Kp reacts to current error. Ki corrects steady-state offset over time. Kd damps oscillation. Tune them and watch how the spacecraft response changes — too much Kp and it overshoots; add Kd to smooth it.
+                Proportional–Integral–Derivative control. Kp reacts to current error. Ki corrects steady-state offset over time. Kd damps oscillation. Tune them and watch how the spacecraft response changes.
               </div>
             </button>
           </div>
@@ -437,15 +431,15 @@
         <div class="pid-row">
           <div class="pid-input-group">
             <label>Kp</label>
-            <input type="number" id="kp" value="2.0" min="0" max="20" step="0.1">
+            <input type="number" id="kp" value="0.5" min="0" max="20" step="0.1">
           </div>
           <div class="pid-input-group">
             <label>Ki</label>
-            <input type="number" id="ki" value="0.05" min="0" max="5" step="0.01">
+            <input type="number" id="ki" value="0.01" min="0" max="5" step="0.01">
           </div>
           <div class="pid-input-group">
             <label>Kd</label>
-            <input type="number" id="kd" value="4.0" min="0" max="20" step="0.1">
+            <input type="number" id="kd" value="1.5" min="0" max="20" step="0.1">
           </div>
         </div>
       </div>
@@ -458,16 +452,17 @@
         <div class="range-bounds"><span>0°</span><span>360°</span></div>
       </div>
       <div style="font-size:0.78rem; color:var(--muted); line-height:1.6; margin-top:-0.5rem;">
-        Watch the spacecraft automatically point to target. Adjust Kd upward to reduce oscillation.
+        Watch the controller drive error to zero automatically. 
       </div>
     </div>
 
     <!-- DETUMBLE MODE -->
     <div id="panel-detumble" style="display:none">
-      <div style="background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.3); border-radius:8px; padding:1rem; margin-bottom:1.25rem;">
-        <div style="font-size:0.8rem; color:var(--warn); font-weight:600; margin-bottom:0.4rem;">⚠ Tumbling Detected</div>
-        <div style="font-size:0.78rem; color:var(--muted); line-height:1.6;">The spacecraft is tumbling after separation from the launch vehicle. B-dot algorithm is active — magnetorquers will damp rotation until stable.</div>
+      <div id="detumble-status-box" style="display:none; border-radius:8px; padding:1rem; margin-bottom:1.25rem;">
+        <div id="detumble-status-title" style="font-size:0.8rem; font-weight:600; margin-bottom:0.4rem;"></div>
+        <div id="detumble-status-desc" style="font-size:0.78rem; line-height:1.6;"></div>
       </div>
+
       <div class="control-group">
         <div class="control-label-row">
           <div class="control-label">Initial Tumble Rate</div>
@@ -495,7 +490,7 @@
         <span class="readout-val amber" id="r-error">0.0°</span>
       </div>
       <div class="readout-row">
-        <span class="readout-key">RW Speed</span>
+        <span class="readout-key">Actual RW RPM</span>
         <span class="readout-val blue" id="r-rw">0 RPM</span>
       </div>
       <div class="readout-row">
@@ -547,20 +542,20 @@
       <div class="physics-card">
         <div class="phys-icon">🌀</div>
         <div class="phys-title">Angular Momentum</div>
-        <div class="phys-formula">L = I · ω</div>
-        <div class="phys-desc">A reaction wheel stores angular momentum in its spinning mass. When you spin the wheel faster, the spacecraft must spin the other way to conserve total angular momentum — no external forces needed.</div>
+        <div class="phys-formula">τ = I · α</div>
+        <div class="phys-desc">A motor accelerates the reaction wheel (Moment of Inertia I). Newton's Third Law dictates an equal and opposite torque is applied to the spacecraft, allowing it to turn in a vacuum.</div>
       </div>
       <div class="physics-card">
         <div class="phys-icon">🧲</div>
         <div class="phys-title">Magnetic Torque</div>
         <div class="phys-formula">τ = m × B</div>
-        <div class="phys-desc">A magnetorquer generates a magnetic dipole moment m that interacts with Earth's field B, producing a torque. The cross product means torque is perpendicular to both — so full 3-axis control needs 3 magnetorquers.</div>
+        <div class="phys-desc">A magnetorquer generates a magnetic dipole moment (m) that interacts with Earth's field (B). The torque is physically limited and weak, so detumbling takes time.</div>
       </div>
       <div class="physics-card">
         <div class="phys-icon">⚙️</div>
         <div class="phys-title">PID Control</div>
-        <div class="phys-formula">u = Kp·e + Ki·∫e + Kd·ė</div>
-        <div class="phys-desc">The controller computes error between desired and actual angle. Kp drives toward target, Ki removes steady-state offset, and Kd prevents overshoot by reacting to how fast the error is changing.</div>
+        <div class="phys-formula">u = Kp·e + Ki·∫e - Kd·ω</div>
+        <div class="phys-desc">Kp drives toward target, Ki removes steady-state offset, and Kd prevents overshoot. We use actual velocity (-ω) instead of error derivative to prevent "derivative kick" when targets change.</div>
       </div>
     </div>
 
@@ -576,29 +571,29 @@
 const canvas = document.getElementById('attCanvas');
 const ctx = canvas.getContext('2d');
 
-// State
+// True Physics State
 let sat = {
-  angle: 0,          // radians
-  omega: 0,          // rad/s
-  inertia: 1.0,      // kg·m² (simplified)
-  rwSpeed: 0,        // RPM (visual)
-  rwAngMom: 0,       // internal angular momentum of wheel
-  mtStrength: 0,
+  angle: 0,            // radians
+  omega: 0,            // rad/s
+  inertia: 1.0,        // kg·m² (Spacecraft moment of inertia)
+  rwInertia: 0.05,     // kg·m² (Reaction wheel moment of inertia)
+  rwOmega: 0,          // Actual wheel speed in rad/s
+  rwCommand: 0,        // Slider target speed representation
+  mtStrength: 0,       // Magnetorquer command (-100 to 100)
   thrusterActive: null,
   fuel: 100,
-  targetAngle: 0,    // radians
+  targetAngle: 0,      // radians
   mode: 'manual',
+  detumbleState: 'idle', // 'idle', 'active', 'complete'
   showVectors: true,
   showBodyFrame: false,
-  detumbling: false,
   frameCount: 0,
 };
 
 // PID state
 let pid = {
-  kp: 2.0, ki: 0.05, kd: 4.0,
+  kp: 0.5, ki: 0.01, kd: 1.5,
   integral: 0,
-  prevError: 0,
 };
 
 // Stars
@@ -851,15 +846,15 @@ function drawSpacecraft(cx, cy) {
   }
 
   // Reaction wheel (visible spinning disc inside)
-  const rwAngle = sat.frameCount * (sat.rwSpeed / 30) * 0.1;
+  const rwRenderAngle = sat.frameCount * (sat.rwOmega * 0.05);
   ctx.save();
-  ctx.rotate(rwAngle);
+  ctx.rotate(rwRenderAngle);
   ctx.beginPath();
   ctx.arc(0, 8, 12, 0, Math.PI * 2);
-  const rwColor = Math.abs(sat.rwSpeed) > 10 ? 'rgba(0,212,170,0.35)' : 'rgba(80,100,140,0.3)';
+  const rwColor = Math.abs(sat.rwOmega) > 10 ? 'rgba(0,212,170,0.35)' : 'rgba(80,100,140,0.3)';
   ctx.fillStyle = rwColor;
   ctx.fill();
-  ctx.strokeStyle = Math.abs(sat.rwSpeed) > 10 ? 'rgba(0,212,170,0.6)' : 'rgba(80,100,140,0.5)';
+  ctx.strokeStyle = Math.abs(sat.rwOmega) > 10 ? 'rgba(0,212,170,0.6)' : 'rgba(80,100,140,0.5)';
   ctx.lineWidth = 1;
   ctx.stroke();
   // spokes
@@ -926,62 +921,82 @@ function getError() {
   return e;
 }
 
-// ===== PHYSICS UPDATE =====
+// ===== ACCURATE PHYSICS ENGINE =====
 const DT = 1 / 60;
-const RW_TORQUE = 0.3;     // Nm per unit slider
-const MT_TORQUE = 0.05;    // Nm per unit (weaker)
+const RW_MAX_TORQUE = 0.3;   // Nm - Max torque motor can apply to the wheel
+const MT_MAX_TORQUE = 0.15;  // Nm - Magnetorquer limit (weak)
 const THRUSTER_TORQUE = 1.2; // Nm
-const DAMPING = 0.998;     // slight drag (e.g., atmosphere)
-const FUEL_RATE = 0.08;    // % per frame per thruster
+const FUEL_RATE = 0.08;      // % per frame per thruster
 
 function updatePhysics() {
-  let torque = 0;
+  let externalTorque = 0; // Torques from outside (thrusters, MT) modifying total system momentum
+  let internalTorque = 0; // Torques from inside (RW) exchanging momentum
 
   if (sat.mode === 'manual') {
-    // Reaction wheel: wheel torque = -d(Lw)/dt
-    const rwTarget = sat.rwSpeed / 100 * 5; // internal angular momentum target
-    const rwDelta = (rwTarget - sat.rwAngMom) * 0.05;
-    sat.rwAngMom += rwDelta;
-    torque -= rwDelta * 3;  // reaction on spacecraft
+    // 1. Magnetorquer
+    externalTorque += (sat.mtStrength / 100) * MT_MAX_TORQUE;
 
-    // Magnetorquer
-    torque += (sat.mtStrength / 100) * MT_TORQUE;
-
-    // Thrusters
+    // 2. Thrusters
     if (sat.thrusterActive === 'cw' && sat.fuel > 0) {
-      torque += THRUSTER_TORQUE;
+      externalTorque += THRUSTER_TORQUE;
       sat.fuel = Math.max(0, sat.fuel - FUEL_RATE);
     } else if (sat.thrusterActive === 'ccw' && sat.fuel > 0) {
-      torque -= THRUSTER_TORQUE;
+      externalTorque -= THRUSTER_TORQUE;
       sat.fuel = Math.max(0, sat.fuel - FUEL_RATE);
     }
 
+    // 3. Reaction Wheel Dynamics 
+    // Slider mapped to max 150 rad/s (approx 1,432 RPM) instead of 500 for better feel
+    const targetRwOmega = (sat.rwCommand / 100) * 150; 
+    const speedError = targetRwOmega - sat.rwOmega;
+    
+    // Motor applies torque to achieve desired wheel speed (slower response for realism)
+    const motorTorque = Math.max(-RW_MAX_TORQUE, Math.min(RW_MAX_TORQUE, speedError * 0.1));
+    
+    // Update wheel velocity
+    sat.rwOmega += (motorTorque / sat.rwInertia) * DT;
+    
+    // Newton's Third Law: Apply opposite torque to spacecraft body
+    internalTorque -= motorTorque;
+
   } else if (sat.mode === 'pid') {
-    const kp = parseFloat(document.getElementById('kp').value) || 2;
-    const ki = parseFloat(document.getElementById('ki').value) || 0.05;
-    const kd = parseFloat(document.getElementById('kd').value) || 4;
+    const kp = parseFloat(document.getElementById('kp').value) || 0.5;
+    const ki = parseFloat(document.getElementById('ki').value) || 0.01;
+    const kd = parseFloat(document.getElementById('kd').value) || 1.5;
 
     const error = getError();
-    pid.integral = Math.max(-5, Math.min(5, pid.integral + error * DT));
-    const derivative = (error - pid.prevError) / DT;
-    pid.prevError = error;
+    pid.integral = Math.max(-2, Math.min(2, pid.integral + error * DT));
+    
+    // Fix Derivative Kick: Use negative of actual velocity instead of error delta
+    const derivative = -sat.omega; 
 
-    torque = kp * error + ki * pid.integral + kd * derivative;
-    torque = Math.max(-3, Math.min(3, torque)); // clamp
+    const pidCommand = kp * error + ki * pid.integral + kd * derivative;
+    
+    // Motor torque is fundamentally constrained by RW hardware limits
+    const motorTorque = Math.max(-RW_MAX_TORQUE, Math.min(RW_MAX_TORQUE, -pidCommand)); 
+    sat.rwOmega += (motorTorque / sat.rwInertia) * DT;
+    
+    // Apply Newton's third law constraint safely
+    internalTorque -= motorTorque;
 
-  } else if (sat.mode === 'detumble') {
-    // B-dot: torque opposes angular velocity
-    torque = -sat.omega * 0.8;
+  } else if (sat.mode === 'detumble' && sat.detumbleState === 'active') {
+    // B-dot algorithm: Apply opposing magnetic torque, clamped to hardware limits
+    if (Math.abs(sat.omega) > 0.008) { // Deadband prevents infinite micro-oscillation
+      // Apply max physical torque against the spin direction
+      externalTorque = Math.max(-MT_MAX_TORQUE, Math.min(MT_MAX_TORQUE, -sat.omega * 5));
+    } else {
+      sat.omega = 0; // kill micro-rotations
+    }
   }
 
-  // Integrate
-  const alpha = torque / sat.inertia;
+  // Integrate true physics (no artificial atmospheric damping)
+  const alpha = (externalTorque + internalTorque) / sat.inertia;
   sat.omega += alpha * DT;
-  sat.omega *= DAMPING;
+  
+  // Clamp omega for sanity to prevent sim explosion
+  sat.omega = Math.max(-15, Math.min(15, sat.omega)); 
   sat.angle += sat.omega * DT;
 
-  // Clamp omega for sanity
-  sat.omega = Math.max(-8, Math.min(8, sat.omega));
   sat.frameCount++;
 }
 
@@ -1018,7 +1033,8 @@ function updateReadouts() {
   const angleDeg = ((sat.angle * 180 / Math.PI) % 360 + 360) % 360;
   const omegaDeg = (sat.omega * 180 / Math.PI).toFixed(2);
   const errorDeg = Math.abs(getError() * 180 / Math.PI).toFixed(1);
-  const rwRPM = Math.round(sat.rwAngMom * 200);
+  const rwRPM = Math.round(sat.rwOmega * (30 / Math.PI)); // rad/s to RPM
+  const absOmega = Math.abs(sat.omega * 180 / Math.PI);
 
   document.getElementById('r-angle').textContent = angleDeg.toFixed(1) + '°';
   document.getElementById('r-omega').textContent = omegaDeg + ' °/s';
@@ -1032,11 +1048,47 @@ function updateReadouts() {
   document.getElementById('s-angle').textContent = angleDeg.toFixed(1) + '°';
   document.getElementById('s-omega').textContent = omegaDeg;
 
-  // Status text
-  const absOmega = Math.abs(sat.omega * 180 / Math.PI);
+  // Status text & dynamic logic
   if (sat.mode === 'detumble') {
-    document.getElementById('s-status').textContent = absOmega < 0.5 ? 'DETUMBLE COMPLETE' : 'B-DOT DAMPING ACTIVE';
-    document.getElementById('s-status').style.color = absOmega < 0.5 ? 'var(--accent)' : 'var(--warn)';
+    const box = document.getElementById('detumble-status-box');
+    const title = document.getElementById('detumble-status-title');
+    const desc = document.getElementById('detumble-status-desc');
+
+    if (sat.detumbleState === 'active') {
+      box.style.display = 'block';
+      if (absOmega > 0.5) {
+        box.style.background = 'rgba(245,158,11,0.08)';
+        box.style.border = '1px solid rgba(245,158,11,0.3)';
+        title.style.color = 'var(--warn)';
+        title.textContent = '⚠ Tumbling Detected — B-Dot Active';
+        desc.style.color = 'var(--muted)';
+        desc.textContent = 'Magnetorquers providing weak opposing torque against Earth\'s magnetic field...';
+        document.getElementById('s-status').textContent = 'B-DOT DAMPING ACTIVE';
+        document.getElementById('s-status').style.color = 'var(--warn)';
+      } else {
+        sat.detumbleState = 'complete';
+        box.style.background = 'rgba(0,212,170,0.08)';
+        box.style.border = '1px solid rgba(0,212,170,0.3)';
+        title.style.color = 'var(--accent)';
+        title.textContent = '✔ Detumble Complete';
+        desc.style.color = 'var(--accent)';
+        desc.textContent = 'Rotation stabilized. Returning to manual control...';
+        document.getElementById('s-status').textContent = 'DETUMBLE COMPLETE';
+        document.getElementById('s-status').style.color = 'var(--accent)';
+
+        setTimeout(() => {
+          if (sat.mode === 'detumble' && sat.detumbleState === 'complete') {
+            sat.detumbleState = 'idle';
+            setMode('manual');
+          }
+        }, 2500);
+      }
+    } else if (sat.detumbleState === 'complete') {
+      box.style.display = 'block';
+    } else {
+      box.style.display = 'none';
+      document.getElementById('s-status').textContent = '';
+    }
   } else if (sat.mode === 'pid') {
     document.getElementById('s-status').textContent = errorDeg < 1 ? 'ON TARGET' : 'TRACKING...';
     document.getElementById('s-status').style.color = errorDeg < 1 ? 'var(--accent)' : 'var(--accent2)';
@@ -1049,15 +1101,11 @@ function updateReadouts() {
 function setMode(mode) {
   sat.mode = mode;
   pid.integral = 0;
-  pid.prevError = 0;
+  
   ['manual', 'pid', 'detumble'].forEach(m => {
     document.getElementById('mode-' + m).className = 'mode-btn' + (m === mode ? ' active' : '');
     document.getElementById('panel-' + m).style.display = m === mode ? 'block' : 'none';
   });
-  if (mode === 'detumble') {
-    const rate = parseInt(document.getElementById('tumble-rate').value);
-    sat.omega = (rate / 10) * 3 * (Math.random() > 0.5 ? 1 : -1);
-  }
 }
 
 function toggleVectors() {
@@ -1088,24 +1136,30 @@ function stopThruster() {
 
 function triggerDetumble() {
   const rate = parseInt(document.getElementById('tumble-rate').value);
-  sat.omega = (rate / 10) * 3 * (Math.random() > 0.5 ? 1 : -1);
+  // Introduce a strong initial spin based on slider
+  sat.omega = (rate / 10) * 4 * (Math.random() > 0.5 ? 1 : -1); 
+  sat.detumbleState = 'active';
+  setMode('detumble');
 }
 
 function resetSat() {
-  sat.angle = 0; sat.omega = 0; sat.rwAngMom = 0; sat.rwSpeed = 0;
+  sat.angle = 0; sat.omega = 0; sat.rwOmega = 0; sat.rwCommand = 0;
   sat.fuel = 100; sat.thrusterActive = null;
-  pid.integral = 0; pid.prevError = 0;
+  sat.detumbleState = 'idle';
+  pid.integral = 0;
   document.getElementById('rw-speed').value = 0;
   document.getElementById('mt-strength').value = 0;
-  document.getElementById('rw-display').textContent = '0 RPM';
+  document.getElementById('rw-display').textContent = 'Target: 0 RPM';
   document.getElementById('mt-display').textContent = '0 A·m²';
   stopThruster();
 }
 
 // Sliders
 document.getElementById('rw-speed').addEventListener('input', function() {
-  sat.rwSpeed = parseInt(this.value);
-  document.getElementById('rw-display').textContent = sat.rwSpeed + ' RPM';
+  sat.rwCommand = parseInt(this.value); 
+  // Map standard 100% slider to the 150 rad/s physical limit, convert to RPM for label display
+  const targetRPM = Math.round((sat.rwCommand / 100) * 150 * (30 / Math.PI));
+  document.getElementById('rw-display').textContent = 'Target: ' + targetRPM + ' RPM';
 });
 
 document.getElementById('mt-strength').addEventListener('input', function() {
@@ -1138,9 +1192,12 @@ document.addEventListener('keydown', e => {
   if (keysDown.has(e.key)) return;
   keysDown.add(e.key);
   const k = e.key.toLowerCase();
-  if (k === 'a') fireThruster('ccw');
-  if (k === 'd') fireThruster('cw');
-  if (k === ' ') { e.preventDefault(); sat.omega = 0; sat.rwAngMom = 0; }
+  
+  // Disabled thrusters strictly when in PID to prevent fighting the controller
+  if (k === 'a' && sat.mode !== 'pid') fireThruster('ccw');
+  if (k === 'd' && sat.mode !== 'pid') fireThruster('cw');
+  
+  if (k === ' ') { e.preventDefault(); sat.omega = 0; sat.rwOmega = 0; }
   if (k === 'r') resetSat();
   if (k === '1') setMode('manual');
   if (k === '2') setMode('pid');
