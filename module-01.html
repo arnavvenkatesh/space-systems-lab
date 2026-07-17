@@ -562,7 +562,6 @@
   </div>
 </nav>
 
-<!-- HEADER -->
 <div class="module-header">
   <div>
     <span class="module-tag">Module 01</span>
@@ -576,14 +575,11 @@
   </div>
 </div>
 
-<!-- SIMULATOR -->
 <div class="simulator-layout">
 
-  <!-- CONTROLS -->
   <div class="controls-panel">
     <div class="panel-title">// Parameters</div>
 
-    <!-- Altitude -->
     <div class="control-group">
       <div class="control-label-row">
         <div class="control-label">
@@ -601,7 +597,6 @@
       <div class="range-bounds"><span>200 km (LEO)</span><span>36,000 km (GEO)</span></div>
     </div>
 
-    <!-- Velocity -->
     <div class="control-group">
       <div class="control-label-row">
         <div class="control-label">
@@ -619,7 +614,6 @@
       <div class="range-bounds"><span>Slower (ellipse)</span><span>Faster (ellipse)</span></div>
     </div>
 
-    <!-- Orbit type -->
     <div class="control-group">
       <div class="control-label-row">
         <div class="control-label">
@@ -638,7 +632,6 @@
       </div>
     </div>
 
-    <!-- Eccentricity (shows when elliptical) -->
     <div class="control-group" id="ecc-group" style="display:none">
       <div class="control-label-row">
         <div class="control-label">
@@ -656,7 +649,6 @@
       <div class="range-bounds"><span>e ≈ 0 (rounder)</span><span>e ≈ 0.9 (elongated)</span></div>
     </div>
 
-    <!-- Hohmann transfer -->
     <div class="control-group">
       <div class="control-label-row">
         <div class="control-label">
@@ -677,7 +669,6 @@
       <button class="hohmann-btn" id="hohmann-btn" onclick="triggerHohmann()">▶ Simulate Transfer</button>
     </div>
 
-    <!-- Live readouts -->
     <div class="readouts">
       <div class="readout-title">// Live Telemetry</div>
       <div class="readout-row">
@@ -697,19 +688,32 @@
         <span class="readout-val amber" id="r-type">Circular</span>
       </div>
       <div class="readout-row">
+        <span class="readout-key">Periapsis Alt.</span>
+        <span class="readout-val" id="r-periapsis">400 km</span>
+      </div>
+      <div class="readout-row">
+        <span class="readout-key">Apoapsis Alt.</span>
+        <span class="readout-val" id="r-apoapsis">400 km</span>
+      </div>
+      <div class="readout-row">
         <span class="readout-key">Δv (Hohmann)</span>
         <span class="readout-val" id="r-dv">—</span>
       </div>
     </div>
   </div>
 
-  <!-- RIGHT SIDE: CANVAS + PHYSICS CARDS -->
   <div class="canvas-area">
 
     <div class="canvas-wrapper">
       <div class="canvas-toolbar">
-        <span class="canvas-title">// Orbit Visualizer — Real-time 2D</span>
+        <span class="canvas-title">// Orbit Visualizer — Real-time 2D <span style="color:var(--muted); font-weight:400">(not to scale — log-scaled distances)</span></span>
         <div class="canvas-controls">
+          <button class="canvas-btn active" id="btn-pause" onclick="togglePause()">⏸ Pause</button>
+          <label style="display:flex; align-items:center; gap:0.3rem; font-size:0.75rem; color:var(--muted)">
+            Speed
+            <input type="range" id="speed-slider" min="1" max="10" step="1" value="1" oninput="updateSpeed()" style="width:70px">
+            <span id="speed-display" style="color:var(--accent); min-width:28px">1×</span>
+          </label>
           <button class="canvas-btn active" id="btn-trail" onclick="toggleTrail()">Trail ON</button>
           <button class="canvas-btn" id="btn-labels" onclick="toggleLabels()">Labels</button>
           <button class="canvas-btn" onclick="resetSim()">Reset</button>
@@ -726,12 +730,10 @@
           <span>SIMULATION RUNNING</span>
         </div>
         <div class="status-item">FRAME: <span id="s-frame" style="color:var(--text); margin-left:4px">0</span></div>
-        <div class="status-item">SPEED: <span style="color:var(--accent); margin-left:4px">1000×</span></div>
         <div class="status-item" id="s-phase" style="color:var(--accent2)"></div>
       </div>
     </div>
 
-    <!-- Physics cards -->
     <div class="physics-cards">
       <div class="physics-card">
         <div class="phys-icon">🌍</div>
@@ -769,6 +771,12 @@ const ctx = canvas.getContext('2d');
 const G = 6.674e-11;
 const M_EARTH = 5.972e24;
 const R_EARTH = 6371e3; // meters
+const MU = G * M_EARTH;
+
+// Time Scale: 1 real second = ~55 simulation seconds. 
+// At 1x speed, a 400km LEO (92 min period) takes roughly 1.6 minutes to complete visually.
+// A standard 400km -> 2000km transfer takes exactly ~60 seconds to complete visually.
+const SIM_TIME_MULTIPLIER = 55;
 
 // Simulation state
 let state = {
@@ -780,16 +788,19 @@ let state = {
   showTrail: true,
   showLabels: false,
   hohmannActive: false,
-  hohmannPhase: 0,       // 0=idle, 1=transfer arc, 2=circularizing
-  hohmannProgress: 0,
+  hohmannPhase: 0,       
+  hohmannDepartureAngle: 0, 
   frameCount: 0,
-  satAngle: 0,           // current angle of sat on orbit (radians)
-  transferAngle: 0,      // angle progress through transfer ellipse
+  meanAnomaly: 0,         // Time-dependent angle variable
+  transferMeanAnomaly: 0, 
+  paused: false,
+  timeScale: 1,           // Speed multiplier
+  prevSatX: undefined,
+  prevSatY: undefined
 };
 
 // Canvas helpers
 function getCenter() {
-  const r = canvas.getBoundingClientRect();
   return { cx: canvas.width / 2, cy: canvas.height / 2 };
 }
 
@@ -797,13 +808,11 @@ function earthRadius() {
   return Math.min(canvas.width, canvas.height) * 0.085;
 }
 
-// Map real orbit radius to canvas pixels
-// LEO (6571km) → small, GEO (42164km) → big
-// Use log scale for better visualization
+// Map real orbit radius to canvas pixels (log scale for visualization)
 function orbitToPixels(rMeters) {
   const rKm = rMeters / 1e3;
-  const minR = R_EARTH / 1e3;       // ~6371
-  const maxR = 42164 + 1000;        // just beyond GEO
+  const minR = R_EARTH / 1e3;       
+  const maxR = 42164 + 1000;        
 
   const eR = earthRadius();
   const maxPx = Math.min(canvas.width, canvas.height) * 0.46;
@@ -817,11 +826,37 @@ function orbitToPixels(rMeters) {
 }
 
 function circularVelocity(r) {
-  return Math.sqrt(G * M_EARTH / r); // m/s
+  return Math.sqrt(MU / r); // m/s
 }
 
 function orbitalPeriod(a) {
-  return 2 * Math.PI * Math.sqrt(a * a * a / (G * M_EARTH)); // seconds
+  return 2 * Math.PI * Math.sqrt(Math.pow(a, 3) / MU); // seconds
+}
+
+// Solve Kepler's Equation M = E - e*sin(E) for eccentric anomaly E
+function solveKepler(M, e) {
+  M = ((M % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+  let E = e < 0.8 ? M : Math.PI;
+  for (let i = 0; i < 8; i++) {
+    const dE = (E - e * Math.sin(E) - M) / (1 - e * Math.cos(E));
+    E -= dE;
+    if (Math.abs(dE) < 1e-6) break;
+  }
+  return E;
+}
+
+function getOrbitElements() {
+  const r = R_EARTH + state.altitude;
+  if (state.orbitType === 'elliptical') {
+    return { r, a: r, ecc: state.eccentricity };
+  }
+  const v = circularVelocity(r) * state.velFactor;
+  const Espec = (v * v) / 2 - MU / r;  
+  const h = r * v;                             
+  let a = -MU / (2 * Espec);
+  let ecc = Math.sqrt(Math.max(0, 1 + (2 * Espec * h * h) / (MU * MU)));
+  if (!isFinite(a) || a <= 0) { a = r; ecc = 0; } 
+  return { r, a, ecc };
 }
 
 function formatPeriod(s) {
@@ -829,7 +864,7 @@ function formatPeriod(s) {
   return (s / 3600).toFixed(2) + ' hr';
 }
 
-// Draw starfield (static)
+// Draw starfield
 let stars = [];
 function initStars() {
   stars = [];
@@ -853,10 +888,8 @@ function drawStars() {
   });
 }
 
-// Draw Earth
 function drawEarth(cx, cy) {
   const er = earthRadius();
-  // Glow
   const glow = ctx.createRadialGradient(cx, cy, er * 0.5, cx, cy, er * 2);
   glow.addColorStop(0, 'rgba(30,80,200,0.15)');
   glow.addColorStop(1, 'rgba(0,0,0,0)');
@@ -865,7 +898,6 @@ function drawEarth(cx, cy) {
   ctx.fillStyle = glow;
   ctx.fill();
 
-  // Earth body
   const earthGrad = ctx.createRadialGradient(cx - er * 0.2, cy - er * 0.2, er * 0.1, cx, cy, er);
   earthGrad.addColorStop(0, '#3a90e8');
   earthGrad.addColorStop(0.4, '#1a5bb5');
@@ -876,14 +908,12 @@ function drawEarth(cx, cy) {
   ctx.fillStyle = earthGrad;
   ctx.fill();
 
-  // Atmosphere ring
   ctx.beginPath();
   ctx.arc(cx, cy, er + 4, 0, Math.PI * 2);
   ctx.strokeStyle = 'rgba(100,180,255,0.3)';
   ctx.lineWidth = 3;
   ctx.stroke();
 
-  // Earth label
   if (state.showLabels) {
     ctx.fillStyle = 'rgba(180,200,240,0.6)';
     ctx.font = `${Math.floor(earthRadius() * 0.3)}px 'Space Mono', monospace`;
@@ -892,12 +922,11 @@ function drawEarth(cx, cy) {
   }
 }
 
-// Draw orbit path
-function drawOrbitPath(cx, cy, a, b, color, dash) {
+function drawOrbitPath(cx, cy, a, b, color, dash, rotation = 0) {
   ctx.save();
   ctx.beginPath();
   if (dash) ctx.setLineDash(dash);
-  ctx.ellipse(cx, cy, a, b, 0, 0, Math.PI * 2);
+  ctx.ellipse(cx, cy, a, b, rotation, 0, Math.PI * 2);
   ctx.strokeStyle = color;
   ctx.lineWidth = 1.5;
   ctx.stroke();
@@ -905,17 +934,15 @@ function drawOrbitPath(cx, cy, a, b, color, dash) {
   ctx.restore();
 }
 
-// Satellite trail
 let trail = [];
 
 function drawSatellite(x, y, angle) {
-  // Trail
   if (state.showTrail) {
     trail.push({ x, y, age: 0 });
-    if (trail.length > 120) trail.shift();
+    if (trail.length > 200) trail.shift(); // Longer trail for slower speed
     trail.forEach((p, i) => {
       p.age++;
-      const alpha = Math.max(0, 0.5 - p.age / 120);
+      const alpha = Math.max(0, 0.5 - p.age / 200);
       ctx.beginPath();
       ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2);
       ctx.fillStyle = `rgba(0,212,170,${alpha})`;
@@ -923,21 +950,17 @@ function drawSatellite(x, y, angle) {
     });
   }
 
-  // Satellite body
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate(angle + Math.PI / 2);
 
-  // Body
   ctx.fillStyle = '#c8d4e8';
   ctx.fillRect(-4, -6, 8, 12);
 
-  // Solar panels
   ctx.fillStyle = '#2563eb';
   ctx.fillRect(-14, -3, 10, 6);
   ctx.fillRect(4, -3, 10, 6);
 
-  // Glow
   ctx.restore();
   const satGlow = ctx.createRadialGradient(x, y, 0, x, y, 12);
   satGlow.addColorStop(0, 'rgba(0,212,170,0.4)');
@@ -948,7 +971,6 @@ function drawSatellite(x, y, angle) {
   ctx.fill();
 }
 
-// Orbit type label on canvas
 function drawOrbitLabel(cx, cy, aPx, label, color) {
   if (!state.showLabels) return;
   ctx.fillStyle = color;
@@ -957,11 +979,9 @@ function drawOrbitLabel(cx, cy, aPx, label, color) {
   ctx.fillText(label, cx, cy - aPx - 10);
 }
 
-// ======= MAIN DRAW =======
+// ======= MAIN DRAW LOOP =======
 function draw() {
-  // Resize canvas to wrapper
   const wrapper = canvas.parentElement;
-  const dpr = window.devicePixelRatio || 1;
   const displayW = wrapper.clientWidth;
   const displayH = Math.max(380, Math.min(520, displayW * 0.62));
 
@@ -974,8 +994,6 @@ function draw() {
   }
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // Background
   ctx.fillStyle = '#060810';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -984,31 +1002,16 @@ function draw() {
   const cx = canvas.width / 2;
   const cy = canvas.height / 2;
 
-  const r = R_EARTH + state.altitude;
-  const aPx = orbitToPixels(r);
+  const els = getOrbitElements();
+  const r_initial = R_EARTH + state.altitude;
+  const r_target = R_EARTH + state.targetAlt;
+  const ecc = els.ecc;                        
+  const aPx = orbitToPixels(els.a);            
+  const bPx = aPx * Math.sqrt(1 - ecc * ecc);  
+  const cPx = aPx * ecc;                       
+  const ellCx = cx - cPx;                      
 
-  // Determine orbit shape
-  let bPx = aPx;
-  let ecc = 0;
-
-  if (state.orbitType === 'elliptical') {
-    ecc = state.eccentricity;
-    // b = a * sqrt(1 - e²)
-    bPx = aPx * Math.sqrt(1 - ecc * ecc);
-  }
-
-  // Velocity deviation from circular
-  const vcirk = circularVelocity(r);
-  const actualVel = vcirk * state.velFactor;
-
-  // Compute "effective eccentricity" from vel factor for visual
-  const velEcc = Math.abs(state.velFactor - 1.0) * 1.2;
-  if (state.orbitType === 'circular' && velEcc > 0.02) {
-    bPx = aPx * Math.sqrt(1 - Math.min(velEcc, 0.9) * Math.min(velEcc, 0.9));
-    ecc = Math.min(velEcc, 0.9);
-  }
-
-  // --- Draw orbit grid rings (faint reference) ---
+  // Draw background orbit reference guidelines
   const refAlts = [400, 2000, 20200, 36000];
   refAlts.forEach(altKm => {
     const rRef = R_EARTH + altKm * 1e3;
@@ -1027,71 +1030,120 @@ function draw() {
     }
   });
 
-  // --- Draw current orbit ---
-  const orbitColor = state.orbitType === 'circular' && velEcc < 0.02
-    ? 'rgba(0,212,170,0.5)'
-    : 'rgba(245,158,11,0.5)';
-  drawOrbitPath(cx, cy, aPx, bPx, orbitColor, null);
-  drawOrbitLabel(cx, cy, aPx, state.orbitType === 'circular' ? 'CIRCULAR ORBIT' : 'ELLIPTICAL ORBIT',
-    orbitColor.replace('0.5', '0.8'));
+  // Calculate strict physical delta-time for current frame (assuming 60fps base rate)
+  const dt = (1 / 60) * SIM_TIME_MULTIPLIER * state.timeScale;
+  
+  let satX, satY, satHeading = 0;
 
-  // --- Hohmann transfer arc ---
   if (state.hohmannActive) {
-    const rTarget = R_EARTH + state.targetAlt;
-    const aPxTarget = orbitToPixels(rTarget);
+    // Current departure orbit path
+    const aPxCirc = orbitToPixels(r_initial);
+    drawOrbitPath(cx, cy, aPxCirc, aPxCirc, 'rgba(0,212,170,0.25)', null);
 
-    // Target orbit
+    // Target final destination orbit path
+    const aPxTarget = orbitToPixels(r_target);
     drawOrbitPath(cx, cy, aPxTarget, aPxTarget, 'rgba(59,126,255,0.4)', [6, 4]);
     drawOrbitLabel(cx, cy, aPxTarget, 'TARGET ORBIT', 'rgba(59,126,255,0.7)');
 
-    // Transfer ellipse (semi-major = avg of two radii)
-    const aTransfer = (aPx + aPxTarget) / 2;
-    const bTransfer = Math.sqrt(aPx * aPxTarget); // geometric mean for Hohmann
-    drawOrbitPath(cx, cy, aTransfer, bTransfer, 'rgba(255,77,109,0.6)', [4, 3]);
+    // Real mathematical physical constraints for Hohmann transfer geometry
+    const aT_real = (r_initial + r_target) / 2;
+    const rPeriPx = orbitToPixels(Math.min(r_initial, r_target));
+    const rApoPx = orbitToPixels(Math.max(r_initial, r_target));
+    
+    const aT = (rPeriPx + rApoPx) / 2;
+    const eccT = Math.abs(rApoPx - rPeriPx) / (rApoPx + rPeriPx);
+    const cT = aT * eccT;
+    const bT = aT * Math.sqrt(1 - eccT * eccT);
 
-    // Show target sat position placeholder
-    ctx.beginPath();
-    ctx.arc(cx - aPxTarget, cy, 5, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(59,126,255,0.6)';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-  }
+    const centerX_rel = -cT * Math.cos(state.hohmannDepartureAngle);
+    const centerY_rel = -cT * Math.sin(state.hohmannDepartureAngle);
+    
+    drawOrbitPath(cx + centerX_rel, cy + centerY_rel, aT, bT, 'rgba(255,77,109,0.6)', [4, 3], state.hohmannDepartureAngle);
 
-  // --- Satellite position ---
-  // Parametric on ellipse
-  const speed = 0.004 * (state.velFactor > 0 ? 1 / state.velFactor : 1);
-  state.satAngle -= speed;
+    // Dynamic execution of True Keplerian Mean Motion (n = sqrt(mu/a^3))
+    const nT = Math.sqrt(MU / Math.pow(aT_real, 3));
+    
+    if (!state.paused) {
+      state.transferMeanAnomaly -= nT * dt;
+    }
 
-  let satX, satY;
-  if (state.hohmannActive) {
-    state.transferAngle -= speed * 0.6;
-    const rTarget = R_EARTH + state.targetAlt;
-    const aPxTarget = orbitToPixels(rTarget);
-    const aT = (aPx + aPxTarget) / 2;
-    const bT = Math.sqrt(aPx * aPxTarget);
-    const prog = (state.transferAngle % (Math.PI * 2));
-    satX = cx + aT * Math.cos(prog);
-    satY = cy + bT * Math.sin(prog);
+    const E = solveKepler(state.transferMeanAnomaly, eccT);
+    const x_f = aT * Math.cos(E) - aT * eccT;
+    const y_f = bT * Math.sin(E);
+
+    const x_rot = x_f * Math.cos(state.hohmannDepartureAngle) - y_f * Math.sin(state.hohmannDepartureAngle);
+    const y_rot = x_f * Math.sin(state.hohmannDepartureAngle) + y_f * Math.cos(state.hohmannDepartureAngle);
+    
+    satX = cx + x_rot;
+    satY = cy + y_rot;
+
     document.getElementById('s-phase').textContent = 'TRANSFER ARC ACTIVE';
+
+    // Auto-termination check
+    let isTransferComplete = false;
+    if (r_target >= r_initial) {
+      if (state.transferMeanAnomaly <= -Math.PI) isTransferComplete = true;
+    } else {
+      if (state.transferMeanAnomaly <= 0) isTransferComplete = true;
+    }
+
+    if (isTransferComplete) {
+      state.hohmannActive = false;
+      state.hohmannPhase = 0;
+      state.altitude = state.targetAlt;
+      state.meanAnomaly = state.hohmannDepartureAngle - Math.PI;
+
+      document.getElementById('altitude').value = state.targetAlt / 1e3;
+      document.getElementById('alt-display').textContent = (state.targetAlt / 1e3).toLocaleString() + ' km';
+      state.velFactor = 1.0;
+      document.getElementById('velocity').value = 100;
+      document.getElementById('vel-display').textContent = (circularVelocity(state.altitude) / 1e3).toFixed(2) + ' km/s';
+
+      const btn = document.getElementById('hohmann-btn');
+      btn.textContent = '▶ Simulate Transfer';
+      btn.style.cssText = '';
+      document.getElementById('hohmann-label').style.display = 'none';
+      trail = [];
+    }
   } else {
-    satX = cx + aPx * Math.cos(state.satAngle);
-    satY = cy + bPx * Math.sin(state.satAngle);
+    // True Keplerian Mean Motion for current steady orbit
+    const n = Math.sqrt(MU / Math.pow(els.a, 3));
+    
+    if (!state.paused) {
+      state.meanAnomaly -= n * dt;
+    }
+    
+    const E = solveKepler(state.meanAnomaly, ecc);
+    satX = ellCx + aPx * Math.cos(E);
+    satY = cy + bPx * Math.sin(E);
     document.getElementById('s-phase').textContent = '';
+
+    const orbitColor = ecc < 0.02 ? 'rgba(0,212,170,0.5)' : 'rgba(245,158,11,0.5)';
+    drawOrbitPath(ellCx, cy, aPx, bPx, orbitColor, null);
+    drawOrbitLabel(ellCx, cy, aPx, ecc < 0.02 ? 'CIRCULAR ORBIT' : 'ELLIPTICAL ORBIT', orbitColor.replace('0.5', '0.8'));
   }
 
-  drawSatellite(satX, satY, state.satAngle);
+  if (typeof state.prevSatX !== 'undefined') {
+    const dx = satX - state.prevSatX;
+    const dy = satY - state.prevSatY;
+    if (Math.abs(dx) > 0.01 || Math.abs(dy) > 0.01) {
+      satHeading = Math.atan2(dy, dx) - Math.PI / 2;
+    }
+  }
+  state.prevSatX = satX;
+  state.prevSatY = satY;
+
+  drawSatellite(satX, satY, satHeading);
   drawEarth(cx, cy);
 
-  // Perigee / apogee labels
-  if (state.showLabels && (ecc > 0.05)) {
+  if (state.showLabels && ecc > 0.05 && !state.hohmannActive) {
     ctx.fillStyle = 'rgba(245,158,11,0.8)';
     ctx.font = "9px 'Space Mono', monospace";
     ctx.textAlign = 'center';
-    ctx.fillText('PERIAPSIS', cx + aPx + 20, cy - 10);
-    ctx.fillText('APOAPSIS', cx - aPx - 20, cy - 10);
+    ctx.fillText('PERIAPSIS', ellCx + aPx + 20, cy - 10);
+    ctx.fillText('APOAPSIS', ellCx - aPx - 20, cy - 10);
   }
 
-  // Frame counter
   state.frameCount++;
   document.getElementById('s-frame').textContent = state.frameCount;
 
@@ -1109,12 +1161,16 @@ function updateReadouts() {
   document.getElementById('r-radius').textContent = (r / 1e6).toFixed(4) + ' × 10⁶ m';
   document.getElementById('r-circvel').textContent = (vcirk / 1e3).toFixed(2) + ' km/s';
 
-  const velEcc = Math.abs(state.velFactor - 1.0) * 1.2;
-  const isCircular = state.orbitType === 'circular' && velEcc < 0.02;
-  document.getElementById('r-type').textContent = isCircular ? 'Circular' : 'Elliptical';
-  document.getElementById('r-type').className = 'readout-val ' + (isCircular ? 'green' : 'amber');
+  const els = getOrbitElements();
+  const isCircular = state.hohmannActive ? true : (els.ecc < 0.02);
+  document.getElementById('r-type').textContent = state.hohmannActive ? 'Transfer Arc' : (isCircular ? 'Circular' : 'Elliptical');
+  document.getElementById('r-type').className = 'readout-val ' + (state.hohmannActive ? 'blue' : (isCircular ? 'green' : 'amber'));
 
-  // Delta-v for Hohmann
+  const altPeri = (els.a * (1 - els.ecc) - R_EARTH) / 1e3;
+  const altApo = (els.a * (1 + els.ecc) - R_EARTH) / 1e3;
+  document.getElementById('r-periapsis').textContent = Math.max(0, altPeri).toFixed(0) + ' km';
+  document.getElementById('r-apoapsis').textContent = altApo.toFixed(0) + ' km';
+
   const r2 = R_EARTH + state.targetAlt;
   const vc1 = circularVelocity(r);
   const vc2 = circularVelocity(r2);
@@ -1136,13 +1192,16 @@ function updateAltitude() {
   document.getElementById('vel-display').textContent = (vcirk * state.velFactor / 1e3).toFixed(2) + ' km/s';
 
   state.hohmannActive = false;
+  state.hohmannPhase = 0;
   document.getElementById('hohmann-label').style.display = 'none';
+  document.getElementById('hohmann-btn').disabled = false;
+  document.getElementById('hohmann-btn').textContent = '▶ Simulate Transfer';
+  document.getElementById('hohmann-btn').style.cssText = '';
   trail = [];
 }
 
 function updateVelocity() {
   const val = parseInt(document.getElementById('velocity').value);
-  // Map slider 30–170 → velFactor 0.6–1.4
   state.velFactor = 0.6 + (val - 30) / 140 * 0.8;
 
   const vcirk = circularVelocity(R_EARTH + state.altitude);
@@ -1168,15 +1227,40 @@ function setOrbitType(type) {
   document.getElementById('btn-circular').className = 'toggle-btn' + (type === 'circular' ? ' active' : '');
   document.getElementById('btn-elliptical').className = 'toggle-btn' + (type === 'elliptical' ? ' active' : '');
   document.getElementById('ecc-group').style.display = type === 'elliptical' ? 'block' : 'none';
+  if (type === 'elliptical') {
+    document.getElementById('hohmann-btn').disabled = true;
+    document.getElementById('hohmann-btn').textContent = '▶ Requires Circular Orbit';
+  } else {
+    document.getElementById('hohmann-btn').disabled = false;
+    document.getElementById('hohmann-btn').textContent = '▶ Simulate Transfer';
+  }
   trail = [];
 }
 
 function triggerHohmann() {
   state.hohmannActive = !state.hohmannActive;
-  state.transferAngle = state.satAngle;
   const btn = document.getElementById('hohmann-btn');
   const label = document.getElementById('hohmann-label');
+  
   if (state.hohmannActive) {
+    const r_initial = R_EARTH + state.altitude;
+    const r_target = R_EARTH + state.targetAlt;
+    
+    state.orbitType = 'circular';
+    setOrbitType('circular');
+    state.velFactor = 1.0;
+    
+    let theta = ((state.meanAnomaly % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+    
+    if (r_target >= r_initial) {
+      state.hohmannDepartureAngle = theta;
+      state.transferMeanAnomaly = 0; 
+    } else {
+      state.hohmannDepartureAngle = theta + Math.PI;
+      state.transferMeanAnomaly = Math.PI; 
+    }
+    
+    state.hohmannPhase = 1;
     btn.textContent = '■ Stop Transfer';
     btn.style.background = 'rgba(255,77,109,0.1)';
     btn.style.borderColor = 'var(--red)';
@@ -1184,6 +1268,7 @@ function triggerHohmann() {
     label.style.display = 'block';
     trail = [];
   } else {
+    state.hohmannPhase = 0;
     btn.textContent = '▶ Simulate Transfer';
     btn.style.background = 'rgba(59,126,255,0.1)';
     btn.style.borderColor = 'var(--accent2)';
@@ -1217,8 +1302,12 @@ function resetSim() {
   state.eccentricity = 0.3;
   state.targetAlt = 2000e3;
   state.hohmannActive = false;
+  state.hohmannPhase = 0;
   state.orbitType = 'circular';
-  state.satAngle = 0;
+  state.meanAnomaly = 0;
+  state.transferMeanAnomaly = 0;
+  state.paused = false;
+  state.timeScale = 1;
   setOrbitType('circular');
   document.getElementById('alt-display').textContent = '400 km';
   document.getElementById('vel-display').textContent = '7.67 km/s';
@@ -1227,7 +1316,23 @@ function resetSim() {
   document.getElementById('hohmann-btn').style.cssText = '';
   document.getElementById('hohmann-label').style.display = 'none';
   document.getElementById('s-phase').textContent = '';
+  document.getElementById('btn-pause').textContent = '⏸ Pause';
+  document.getElementById('speed-slider').value = 1;
+  document.getElementById('speed-display').textContent = '1×';
   trail = [];
+}
+
+function togglePause() {
+  state.paused = !state.paused;
+  const btn = document.getElementById('btn-pause');
+  btn.textContent = state.paused ? '▶ Play' : '⏸ Pause';
+  btn.className = 'canvas-btn' + (state.paused ? ' active' : '');
+}
+
+function updateSpeed() {
+  const val = parseInt(document.getElementById('speed-slider').value);
+  state.timeScale = val;
+  document.getElementById('speed-display').textContent = val + '×';
 }
 
 // Wire up event listeners
