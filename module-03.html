@@ -23,7 +23,6 @@
       --font: 'Outfit', sans-serif;
       --mono: 'Space Mono', monospace;
 
-      /* Subsystem colors */
       --eps-color: #f59e0b;
       --comms-color: #3b7eff;
       --obc-color: #a855f7;
@@ -34,20 +33,17 @@
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    
     body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--font);
-      min-height: 100vh;
-      overflow-x: hidden;
+      background: var(--bg); color: var(--text); font-family: var(--font);
+      height: 100vh; overflow: hidden; display: flex; flex-direction: column;
     }
 
-    /* NAV */
+    /* NAV & HEADER */
     nav {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 1rem 2rem; border-bottom: 1px solid var(--border);
-      background: rgba(6,8,16,0.92); backdrop-filter: blur(10px);
-      position: sticky; top: 0; z-index: 200;
+      padding: 0.75rem 1.5rem; border-bottom: 1px solid var(--border);
+      background: rgba(6,8,16,0.92); backdrop-filter: blur(10px); z-index: 200; flex-shrink: 0;
     }
     .nav-logo { font-family: var(--mono); font-size: 1rem; color: var(--white); letter-spacing: 2px; }
     .nav-logo span { color: var(--accent); }
@@ -55,37 +51,38 @@
     .nav-breadcrumb a { color: var(--muted); text-decoration: none; transition: color 0.2s; }
     .nav-breadcrumb a:hover { color: var(--accent); }
     .nav-breadcrumb .sep { margin: 0 0.5rem; }
-    .nav-right a {
-      font-size: 0.82rem; color: var(--muted); text-decoration: none;
-      border: 1px solid var(--border); padding: 0.35rem 0.9rem;
-      border-radius: 4px; transition: all 0.2s;
+    
+    .module-header { 
+      padding: 0.75rem 1.5rem; max-width: 1400px; margin: 0 auto; width: 100%; 
+      flex-shrink: 0; display: flex; align-items: center; gap: 15px;
     }
-    .nav-right a:hover { color: var(--accent); border-color: var(--accent); }
-
-    /* HEADER */
-    .module-header { padding: 3rem 2rem 2rem; max-width: 1300px; margin: 0 auto; }
-    .module-tag { font-family: var(--mono); font-size: 0.7rem; color: var(--accent); letter-spacing: 3px; text-transform: uppercase; display: block; margin-bottom: 0.75rem; }
-    .module-header h1 { font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 800; color: var(--white); letter-spacing: -1.5px; line-height: 1.1; margin-bottom: 0.75rem; }
-    .module-header p { color: var(--muted); font-size: 0.95rem; max-width: 600px; line-height: 1.7; }
-    .module-pills { display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap; }
-    .pill { font-size: 0.72rem; font-family: var(--mono); padding: 0.25rem 0.7rem; border-radius: 100px; border: 1px solid var(--border); color: var(--muted); }
-
+    .module-header h1 { font-size: 1.6rem; font-weight: 800; color: var(--white); letter-spacing: -1px; margin-bottom: 0; }
+    .module-header p { color: var(--muted); font-size: 0.82rem; max-width: 800px; margin-bottom: 0;}
+    
     /* MAIN LAYOUT */
     .main-layout {
-      max-width: 1300px; margin: 0 auto; padding: 0 2rem 5rem;
-      display: grid; grid-template-columns: 1fr 340px; gap: 1.5rem; align-items: start;
+      max-width: 1400px; margin: 0 auto; padding: 0 1.5rem 1rem; width: 100%;
+      display: grid; grid-template-columns: 1fr 400px; gap: 1.25rem; 
+      flex-grow: 1; overflow: hidden;
     }
 
-    /* ===== LEFT: CubeSat Visualizer ===== */
-    .left-col { display: flex; flex-direction: column; gap: 1.5rem; }
+    /* COLUMNS & SCROLLBAR */
+    .left-col, .right-col { display: flex; flex-direction: column; gap: 0.85rem; overflow-y: auto; padding-right: 0.5rem; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
 
-    /* Tab bar */
+    /* STATE LOCK (Mission Active) */
+    .locked { pointer-events: none; opacity: 0.6; filter: grayscale(0.4); transition: all 0.3s; }
+
+    /* TAB BAR */
     .tab-bar {
-      display: flex; gap: 0; background: var(--surface);
-      border: 1px solid var(--border); border-radius: 10px; overflow: hidden;
+      display: flex; gap: 0; background: var(--surface); flex-shrink: 0;
+      border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
     }
     .tab-btn {
-      flex: 1; padding: 0.7rem 0.5rem; background: none; border: none;
+      flex: 1; padding: 0.4rem; background: none; border: none;
       border-right: 1px solid var(--border); color: var(--muted);
       font-size: 0.75rem; font-family: var(--font); font-weight: 600;
       cursor: pointer; transition: all 0.2s; text-align: center;
@@ -94,1356 +91,839 @@
     .tab-btn.active { background: rgba(0,212,170,0.1); color: var(--accent); }
     .tab-btn:hover:not(.active) { color: var(--text); background: var(--surface2); }
 
-    /* Visualizer canvas box */
-    .vis-box {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 12px; overflow: hidden;
-    }
-    .vis-toolbar {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0.75rem 1.2rem; border-bottom: 1px solid var(--border);
-    }
-    .vis-title { font-family: var(--mono); font-size: 0.65rem; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; }
+    /* VISUALIZER */
+    .vis-box { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; flex-shrink: 0; }
+    .vis-toolbar { display: flex; align-items: center; justify-content: space-between; padding: 0.4rem 1rem; border-bottom: 1px solid var(--border); }
+    .vis-title { font-family: var(--mono); font-size: 0.65rem; letter-spacing: 1px; color: var(--muted); text-transform: uppercase; }
     .vis-btns { display: flex; gap: 0.5rem; }
     .vis-btn {
       background: var(--surface2); border: 1px solid var(--border); color: var(--muted);
-      padding: 0.28rem 0.65rem; border-radius: 4px; font-size: 0.7rem;
+      padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.65rem;
       cursor: pointer; font-family: var(--mono); transition: all 0.2s;
     }
     .vis-btn:hover, .vis-btn.active { color: var(--accent); border-color: var(--accent); }
 
-    canvas#cubesatCanvas { display: block; width: 100%; }
-
-    /* Power flow diagram tab */
-    canvas#powerCanvas { display: block; width: 100%; }
-
-    /* Comms link tab */
-    canvas#commsCanvas { display: block; width: 100%; }
-
-    /* Status bar */
-    .status-bar {
-      display: flex; align-items: center; gap: 1.5rem; padding: 0.6rem 1.2rem;
-      background: var(--surface2); border-top: 1px solid var(--border); flex-wrap: wrap;
+    /* Canvas Height Minimized per Request */
+    canvas { display: block; width: 100%; height: 260px; }
+    
+    .vis-explainer {
+      padding: 0.5rem 1rem; background: rgba(0,212,170,0.05);
+      border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+      font-size: 0.7rem; color: var(--text); line-height: 1.4;
     }
-    .status-item { display: flex; align-items: center; gap: 0.4rem; font-family: var(--mono); font-size: 0.68rem; color: var(--muted); }
+
+    /* STATUS BAR */
+    .status-bar { display: flex; align-items: center; gap: 1rem; padding: 0.5rem 1rem; background: var(--surface2); flex-wrap: wrap; }
+    .status-item { display: flex; align-items: center; gap: 0.4rem; font-family: var(--mono); font-size: 0.65rem; color: var(--muted); }
     .status-dot { width: 6px; height: 6px; border-radius: 50%; animation: pulse 2s infinite; }
     .status-dot.green { background: var(--accent); }
     .status-dot.amber { background: var(--warn); }
     .status-dot.red { background: var(--red); }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-    /* Budget table */
-    .budget-section {
-      background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
-    }
-    .budget-header { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-    .budget-header h3 { font-size: 0.85rem; font-weight: 700; color: var(--white); }
-    .budget-tag { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); }
-
+    /* BUDGET TABLE */
+    .budget-section { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; flex-shrink: 0; }
+    .budget-header { padding: 0.6rem 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .budget-header h3 { font-size: 0.75rem; font-weight: 700; color: var(--white); }
+    .budget-tag { font-family: var(--mono); font-size: 0.6rem; color: var(--muted); }
     .budget-table { width: 100%; border-collapse: collapse; }
-    .budget-table th {
-      font-family: var(--mono); font-size: 0.6rem; letter-spacing: 2px; color: var(--muted);
-      text-transform: uppercase; padding: 0.6rem 1.5rem; text-align: left;
-      border-bottom: 1px solid var(--border); background: var(--surface2);
-    }
+    .budget-table th { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 1px; color: var(--muted); text-transform: uppercase; padding: 0.4rem 1rem; text-align: left; border-bottom: 1px solid var(--border); background: var(--surface2); }
     .budget-table th:not(:first-child) { text-align: right; }
-    .budget-table td { padding: 0.55rem 1.5rem; font-size: 0.82rem; border-bottom: 1px solid rgba(255,255,255,0.03); }
-    .budget-table td:not(:first-child) { text-align: right; font-family: var(--mono); font-size: 0.78rem; }
-    .budget-table tr:last-child td { border-bottom: none; }
+    .budget-table td { padding: 0.35rem 1rem; font-size: 0.7rem; border-bottom: 1px solid rgba(255,255,255,0.03); }
+    .budget-table td:not(:first-child) { text-align: right; font-family: var(--mono); }
     .budget-table tr:hover td { background: rgba(255,255,255,0.02); }
-
-    .sys-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+    .sys-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 8px; vertical-align: middle; }
     .bar-cell { display: flex; align-items: center; gap: 0.5rem; justify-content: flex-end; }
-    .mini-bar { height: 4px; border-radius: 2px; min-width: 4px; }
-    .total-row td { font-weight: 700; color: var(--white); border-top: 1px solid var(--border); }
+    .mini-bar { height: 4px; border-radius: 2px; min-width: 4px; transition: width 0.3s; }
+    .total-row td { font-weight: 700; color: var(--white); border-top: 1px solid var(--border); border-bottom: none; }
+    .budget-limit { padding: 0.4rem 1rem; background: var(--surface2); border-top: 1px solid var(--border); text-align: right; font-size: 0.65rem; font-family: var(--mono); }
 
-    /* ===== RIGHT: Control Panel ===== */
-    .right-col { display: flex; flex-direction: column; gap: 1.25rem; }
+    /* PANELS */
+    .panel-box { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; flex-shrink: 0; }
+    .panel-box-header { padding: 0.5rem 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--surface2); border-radius: 10px 10px 0 0; }
+    .panel-box-title { font-family: var(--mono); font-size: 0.65rem; letter-spacing: 1px; color: var(--accent); text-transform: uppercase; }
+    .panel-box-body { padding: 0.75rem; }
 
-    .panel-box {
-      background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
-    }
-    .panel-box-header {
-      padding: 0.85rem 1.25rem; border-bottom: 1px solid var(--border);
-      display: flex; justify-content: space-between; align-items: center;
-    }
-    .panel-box-title { font-family: var(--mono); font-size: 0.65rem; letter-spacing: 2px; color: var(--accent); text-transform: uppercase; }
-    .panel-box-body { padding: 1.25rem; }
-
-    /* Subsystem selector */
-    .subsys-grid {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;
-    }
-    .subsys-btn {
-      padding: 0.6rem 0.5rem; background: var(--surface2); border-radius: 7px;
-      border: 1px solid var(--border); cursor: pointer; transition: all 0.2s;
-      text-align: left; display: flex; align-items: center; gap: 0.5rem;
-    }
+    /* SUBSYS GRID */
+    .subsys-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; }
+    .subsys-btn { padding: 0.4rem; background: var(--surface2); border-radius: 6px; border: 1px solid var(--border); cursor: pointer; transition: all 0.2s; text-align: left; display: flex; align-items: center; gap: 0.4rem; }
     .subsys-btn:hover { border-color: rgba(255,255,255,0.2); }
-    .subsys-btn.active { border-color: currentColor; }
-    .subsys-icon { font-size: 1rem; }
-    .subsys-name { font-size: 0.75rem; font-weight: 600; }
-    .subsys-status { font-family: var(--mono); font-size: 0.6rem; margin-top: 0.15rem; opacity: 0.7; }
+    .subsys-btn.active { border-color: currentColor; background: rgba(255,255,255,0.03); }
+    .subsys-icon { font-size: 0.9rem; }
+    .subsys-name { font-size: 0.7rem; font-weight: 600; color: var(--text); }
+    .subsys-status { font-family: var(--mono); font-size: 0.55rem; margin-top: 0.1rem; opacity: 0.9; }
 
-    /* Detail panel */
-    .detail-panel { display: flex; flex-direction: column; gap: 1rem; }
+    /* DETAIL PANEL */
+    .detail-panel { display: flex; flex-direction: column; gap: 0.65rem; }
+    .detail-header { display: flex; align-items: center; gap: 0.5rem; }
+    .detail-icon { font-size: 1.4rem; }
+    .detail-title { font-size: 0.85rem; font-weight: 700; color: var(--white); }
+    .detail-subtitle { font-size: 0.6rem; color: var(--muted); }
+    .detail-desc { font-size: 0.7rem; color: var(--text); line-height: 1.4; background: var(--surface2); border-radius: 6px; padding: 0.6rem; border-left: 2px solid var(--accent); opacity: 0.85; }
+    .metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; }
+    .metric-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 0.4rem; text-align: center; }
+    .metric-val { font-family: var(--mono); font-size: 0.85rem; font-weight: 700; display: block; margin-bottom: 0.1rem; }
+    .metric-key { font-size: 0.55rem; color: var(--muted); }
+    .param-group { margin-bottom: 0.4rem; }
+    .param-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.2rem; }
+    .param-label { font-size: 0.7rem; color: var(--text); display: flex; align-items: center; }
+    .param-val { font-family: var(--mono); font-size: 0.65rem; color: var(--accent); }
+    input[type="range"] { width: 100%; -webkit-appearance: none; appearance: none; height: 4px; border-radius: 2px; background: var(--border); outline: none; cursor: pointer; }
+    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); cursor: pointer; box-shadow: 0 0 5px rgba(0,212,170,0.4); }
 
-    .detail-header { display: flex; align-items: center; gap: 0.75rem; }
-    .detail-icon { font-size: 1.8rem; }
-    .detail-title { font-size: 1rem; font-weight: 700; color: var(--white); }
-    .detail-subtitle { font-size: 0.78rem; color: var(--muted); margin-top: 0.1rem; }
-
-    .detail-desc {
-      font-size: 0.82rem; color: var(--muted); line-height: 1.7;
-      background: var(--surface2); border-radius: 6px; padding: 0.9rem;
-      border-left: 2px solid var(--accent);
+    /* GLOBAL INFO TOOLTIP (Prevents Clipping) */
+    .info-btn { background: none; border: none; color: var(--muted); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; margin-left: 6px; padding: 0; transition: color 0.2s; }
+    .info-btn:hover { color: var(--accent); }
+    .global-tooltip {
+      position: fixed; background: var(--surface2); border: 1px solid var(--accent); border-radius: 6px; padding: 0.75rem; width: 220px; font-size: 0.7rem; 
+      color: var(--white); line-height: 1.4; z-index: 9999; pointer-events: none; opacity: 0; transition: opacity 0.2s, transform 0.2s; font-family: var(--font);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.8); transform: translateY(5px);
     }
+    .global-tooltip.show { opacity: 1; transform: translateY(0); }
 
-    /* Metrics */
-    .metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
-    .metric-card {
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 7px; padding: 0.75rem; text-align: center;
-    }
-    .metric-val { font-family: var(--mono); font-size: 1rem; font-weight: 700; display: block; margin-bottom: 0.2rem; }
-    .metric-key { font-size: 0.68rem; color: var(--muted); }
+    /* HEALTH & SCENARIOS & MISSION CONTROL */
+    .health-bar-wrapper { margin-top: 0.2rem; }
+    .health-label-row { display: flex; justify-content: space-between; margin-bottom: 0.2rem; }
+    .health-label { font-size: 0.6rem; color: var(--muted); }
+    .health-val { font-family: var(--mono); font-size: 0.6rem; }
+    .health-bar-track { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+    .health-bar-fill { height: 100%; border-radius: 2px; transition: width 0.4s, background 0.4s; }
 
-    /* Sliders inside detail */
-    .param-group { margin-bottom: 0.9rem; }
-    .param-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem; }
-    .param-label { font-size: 0.78rem; color: var(--text); }
-    .param-val { font-family: var(--mono); font-size: 0.72rem; color: var(--accent); }
-    input[type="range"] {
-      width: 100%; -webkit-appearance: none; appearance: none;
-      height: 4px; border-radius: 2px; background: var(--border); outline: none; cursor: pointer;
-    }
-    input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none; width: 13px; height: 13px; border-radius: 50%;
-      background: var(--accent); cursor: pointer;
-      box-shadow: 0 0 5px rgba(0,212,170,0.4);
-    }
-
-    /* Tooltip */
-    .info-btn {
-      width: 15px; height: 15px; border-radius: 50%; border: 1px solid var(--muted);
-      background: none; color: var(--muted); font-size: 0.58rem; cursor: pointer;
-      display: inline-flex; align-items: center; justify-content: center; position: relative;
-      flex-shrink: 0; transition: all 0.2s; font-family: var(--mono);
-    }
-    .info-btn:hover { border-color: var(--accent); color: var(--accent); }
-    .info-btn .tooltip {
-      position: absolute; left: 20px; top: 50%; transform: translateY(-50%);
-      background: var(--surface2); border: 1px solid var(--accent); border-radius: 8px;
-      padding: 0.8rem; width: 210px; font-size: 0.76rem; color: var(--text);
-      line-height: 1.6; z-index: 500; pointer-events: none; opacity: 0;
-      transition: opacity 0.2s; font-family: var(--font); font-weight: 400;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
-    }
-    .info-btn .tooltip::before {
-      content: ''; position: absolute; left: -5px; top: 50%; transform: translateY(-50%);
-      border: 4px solid transparent; border-right-color: var(--accent); border-left: none;
-    }
-    .info-btn:hover .tooltip { opacity: 1; }
-
-    /* Global health bar */
-    .health-bar-wrapper { margin-top: 0.25rem; }
-    .health-label-row { display: flex; justify-content: space-between; margin-bottom: 0.3rem; }
-    .health-label { font-size: 0.72rem; color: var(--muted); }
-    .health-val { font-family: var(--mono); font-size: 0.72rem; }
-    .health-bar-track { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
-    .health-bar-fill { height: 100%; border-radius: 3px; transition: width 0.4s, background 0.4s; }
-
-    /* Scenario buttons */
-    .scenario-btns { display: flex; flex-direction: column; gap: 0.5rem; }
+    .scenario-btns { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 0.75rem; }
     .scenario-btn {
-      padding: 0.65rem 1rem; background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 7px; color: var(--muted); font-size: 0.8rem; font-family: var(--font);
+      padding: 0.4rem 0.6rem; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 6px; color: var(--muted); font-size: 0.7rem; font-family: var(--font);
       cursor: pointer; transition: all 0.2s; text-align: left; display: flex; justify-content: space-between; align-items: center;
     }
     .scenario-btn:hover { border-color: var(--accent); color: var(--text); }
-    .scenario-btn.active { background: rgba(0,212,170,0.08); border-color: var(--accent); color: var(--accent); }
-    .scenario-tag { font-family: var(--mono); font-size: 0.6rem; opacity: 0.7; }
+    .scenario-btn.armed { background: rgba(245,158,11,0.1); border-color: var(--warn); color: var(--warn); }
+    .scenario-tag { font-family: var(--mono); font-size: 0.55rem; opacity: 0.8; display: flex; align-items: center; }
 
-    /* Alert log */
-    .alert-log { display: flex; flex-direction: column; gap: 0.4rem; max-height: 150px; overflow-y: auto; }
+    .mission-ctrl { border-top: 1px solid var(--border); padding-top: 0.75rem; display: flex; justify-content: space-between; align-items: center; }
+    .launch-btn {
+      background: rgba(0,212,170,0.1); border: 1px solid var(--accent); color: var(--accent);
+      padding: 0.4rem 1rem; border-radius: 4px; font-family: var(--font); font-weight: 600; font-size: 0.75rem; cursor: pointer; transition: all 0.2s;
+    }
+    .launch-btn:hover { background: var(--accent); color: var(--bg); }
+    .launch-btn.disabled { background: rgba(255,77,109,0.1); border-color: var(--red); color: var(--red); pointer-events: none; }
+    .mission-timer { font-family: var(--mono); font-size: 0.8rem; color: var(--white); font-weight: bold; }
+
+    /* LOGS */
+    .alert-log { display: flex; flex-direction: column; gap: 0.4rem; height: 100px; overflow-y: auto; }
     .alert-entry { display: flex; gap: 0.5rem; align-items: flex-start; padding: 0.35rem 0.5rem; border-radius: 4px; }
     .alert-entry.info { background: rgba(59,126,255,0.06); }
     .alert-entry.warn { background: rgba(245,158,11,0.07); }
     .alert-entry.error { background: rgba(255,77,109,0.07); }
-    .alert-time { font-family: var(--mono); font-size: 0.6rem; color: var(--muted); white-space: nowrap; padding-top: 1px; }
-    .alert-msg { font-size: 0.73rem; line-height: 1.4; }
+    .alert-time { font-family: var(--mono); font-size: 0.55rem; color: var(--muted); white-space: nowrap; padding-top: 1px; }
+    .alert-msg { font-size: 0.65rem; line-height: 1.4; }
     .alert-msg.info { color: var(--accent2); }
     .alert-msg.warn { color: var(--warn); }
     .alert-msg.error { color: var(--red); }
 
-    @media (max-width: 1000px) {
-      .main-layout { grid-template-columns: 1fr; }
-      .right-col { order: -1; }
+    /* MODAL */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(6,8,16,0.85); backdrop-filter: blur(4px);
+      display: none; justify-content: center; align-items: center; z-index: 1000;
     }
-    @media (max-width: 600px) {
-      .module-header { padding: 2rem 1rem 1.5rem; }
-      .main-layout { padding: 0 1rem 3rem; }
+    .modal-box {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 2rem; width: 320px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.8);
     }
+    .modal-title { font-size: 1.4rem; font-weight: 800; margin-bottom: 0.5rem; }
+    .modal-reason { font-size: 0.8rem; color: var(--text); margin-bottom: 1rem; line-height: 1.4; }
+    .modal-time { font-family: var(--mono); font-size: 1rem; color: var(--white); margin-bottom: 1.5rem; }
+    .modal-btn { background: var(--surface2); border: 1px solid var(--muted); color: var(--white); padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; transition: all 0.2s; font-family: var(--font); }
+    .modal-btn:hover { border-color: var(--white); background: rgba(255,255,255,0.1); }
+
+    @media (max-width: 1000px) { body { height: auto; overflow-y: auto; } .main-layout { grid-template-columns: 1fr; overflow: visible; } .left-col, .right-col { overflow-y: visible; padding-right: 0; } }
   </style>
 </head>
 <body>
 
-<nav>
-  <div class="nav-logo">SSL<span>.</span></div>
-  <div class="nav-breadcrumb">
-    <a href="modules.html">Modules</a>
-    <span class="sep">/</span>
-    <span>03 — CubeSat Systems</span>
-  </div>
-  <div class="nav-right"><a href="modules.html">← Back to Modules</a></div>
-</nav>
+<!-- Global Tooltip Element -->
+<div id="global-tooltip" class="global-tooltip"></div>
 
-<div class="module-header">
-  <span class="module-tag">Module 03</span>
-  <h1>CubeSat<br>Systems</h1>
-  <p>Explore every subsystem of a 3U CubeSat — power, comms, onboard computer, attitude control, thermal, and payload. Tune parameters, trigger failure scenarios, and understand the engineering trade-offs that go into every small satellite.</p>
-  <div class="module-pills">
-    <span class="pill">Interactive</span>
-    <span class="pill">3U CubeSat</span>
-    <span class="pill">All Subsystems</span>
-    <span class="pill">Intermediate</span>
+<!-- Mission Result Modal -->
+<div id="mission-modal" class="modal-overlay">
+  <div class="modal-box">
+    <div id="modal-title" class="modal-title">MISSION FAILURE</div>
+    <div id="modal-reason" class="modal-reason">Thermal runaway destroyed primary avionics.</div>
+    <div id="modal-time" class="modal-time">Survived: 14.2s</div>
+    <button class="modal-btn" onclick="resetMission()">Acknowledge & Reset</button>
   </div>
 </div>
 
+<nav>
+  <div class="nav-logo">SSL<span>.</span></div>
+  <div class="nav-breadcrumb"><a href="#">Modules</a> <span class="sep">/</span> <span>03 — CubeSat Systems</span></div>
+</nav>
+
+<div class="module-header">
+  <h1>CubeSat Systems</h1>
+  <p>Tune parameters and arm failure scenarios. Keep dynamic power below 8.0W and prevent temperatures from exceeding 60.0°C. Survive 60 seconds.</p>
+</div>
+
 <div class="main-layout">
-
   <!-- LEFT COLUMN -->
-  <div class="left-col">
-
-    <!-- Tab bar -->
+  <div class="left-col" id="left-col">
     <div class="tab-bar">
       <button class="tab-btn active" onclick="switchTab('structure')">🛰 3D View</button>
       <button class="tab-btn" onclick="switchTab('power')">⚡ Power Flow</button>
       <button class="tab-btn" onclick="switchTab('comms')">📡 Comms Link</button>
     </div>
 
-    <!-- Visualizer -->
     <div class="vis-box">
       <div class="vis-toolbar">
-        <span class="vis-title" id="vis-title">// CubeSat Structure — 3U Form Factor</span>
+        <span class="vis-title" id="vis-title">// Structure</span>
         <div class="vis-btns">
           <button class="vis-btn active" id="btn-animate" onclick="toggleAnimate()">Rotating</button>
-          <button class="vis-btn" id="btn-explode" onclick="toggleExplode()">Explode View</button>
+          <button class="vis-btn" id="btn-explode" onclick="toggleExplode()">Exploded</button>
           <button class="vis-btn" onclick="resetView()">Reset</button>
         </div>
       </div>
-      <canvas id="cubesatCanvas" height="440"></canvas>
-      <canvas id="powerCanvas" height="440" style="display:none"></canvas>
-      <canvas id="commsCanvas" height="440" style="display:none"></canvas>
+      
+      <canvas id="cubesatCanvas"></canvas>
+      <canvas id="powerCanvas" style="display:none"></canvas>
+      <canvas id="commsCanvas" style="display:none"></canvas>
+      
+      <div class="vis-explainer" id="vis-explainer">
+        Interactive 3D model of the CubeSat. Use the controls to rotate or explode the view to see the internal subsystem stack. Notice how failures affect the physical render dynamically.
+      </div>
+
       <div class="status-bar" id="main-status">
-        <div class="status-item"><div class="status-dot green"></div><span>ALL SYSTEMS NOMINAL</span></div>
+        <div class="status-item"><div class="status-dot green" id="global-dot"></div><span id="global-status-txt">NOMINAL</span></div>
         <div class="status-item">PWR: <span id="s-power" style="color:var(--text);margin-left:4px">4.2W</span></div>
         <div class="status-item">BATT: <span id="s-batt" style="color:var(--accent);margin-left:4px">87%</span></div>
-        <div class="status-item">TEMP: <span id="s-temp" style="color:var(--text);margin-left:4px">18°C</span></div>
+        <div class="status-item">TEMP: <span id="s-temp" style="color:var(--text);margin-left:4px">18.0°C</span></div>
         <div class="status-item" id="s-alert" style="color:var(--warn)"></div>
       </div>
     </div>
 
-    <!-- Mass & Power Budget Table -->
+    <!-- Budget Table -->
     <div class="budget-section">
       <div class="budget-header">
-        <h3>Mass & Power Budget</h3>
-        <span class="budget-tag">3U CubeSat — 10×10×34 cm</span>
+        <h3>Dynamic Budget</h3>
+        <span class="budget-tag" id="budget-totals">3U Constraint: &lt; 4000g</span>
       </div>
       <table class="budget-table">
-        <thead>
-          <tr>
-            <th>Subsystem</th>
-            <th>Mass (g)</th>
-            <th>Power (W)</th>
-            <th>% Budget</th>
-          </tr>
-        </thead>
-        <tbody id="budget-tbody">
-          <!-- filled by JS -->
-        </tbody>
+        <thead><tr><th>Subsystem</th><th>Mass (g)</th><th>Power (W)</th><th>% Power</th></tr></thead>
+        <tbody id="budget-tbody"></tbody>
       </table>
+      <div class="budget-limit">
+        Power Limit: <span id="pwr-limit-val" style="color:var(--accent)">4.2W / 8.0W Max</span>
+      </div>
     </div>
-
   </div>
 
   <!-- RIGHT COLUMN -->
-  <div class="right-col">
-
-    <!-- Subsystem selector -->
+  <div class="right-col" id="right-col">
+    <!-- Subsystems -->
     <div class="panel-box">
-      <div class="panel-box-header">
-        <span class="panel-box-title">// Subsystems</span>
-        <span style="font-size:0.7rem;color:var(--muted)">Click to inspect</span>
-      </div>
-      <div class="panel-box-body">
-        <div class="subsys-grid" id="subsys-grid">
-          <!-- filled by JS -->
-        </div>
-      </div>
+      <div class="panel-box-header"><span class="panel-box-title">// Subsystems</span></div>
+      <div class="panel-box-body"><div class="subsys-grid" id="subsys-grid"></div></div>
     </div>
 
-    <!-- Detail panel -->
+    <!-- Details -->
     <div class="panel-box" id="detail-panel-box">
-      <div class="panel-box-header">
-        <span class="panel-box-title" id="detail-panel-title">// EPS — Select a Subsystem</span>
-      </div>
-      <div class="panel-box-body">
-        <div class="detail-panel" id="detail-content">
-          <!-- filled by JS -->
-        </div>
-      </div>
+      <div class="panel-box-header"><span class="panel-box-title" id="detail-panel-title">// Select a Subsystem</span></div>
+      <div class="panel-box-body"><div class="detail-panel" id="detail-content"></div></div>
     </div>
 
-    <!-- Failure Scenarios -->
+    <!-- Scenarios / Mission Control -->
     <div class="panel-box">
       <div class="panel-box-header">
-        <span class="panel-box-title">// Failure Scenarios</span>
-        <button class="vis-btn" onclick="clearScenario()">Clear</button>
+        <span class="panel-box-title">// Mission Control</span>
       </div>
       <div class="panel-box-body">
-        <div class="scenario-btns" id="scenario-btns">
-          <!-- filled by JS -->
+        <div class="scenario-btns" id="scenario-btns"></div>
+        <div class="mission-ctrl">
+          <button class="launch-btn" id="launch-btn" onclick="beginMission()">Begin Mission</button>
+          <div class="mission-timer" id="mission-timer">T+ 00.0s</div>
         </div>
       </div>
     </div>
 
-    <!-- Alert Log -->
+    <!-- Logs -->
     <div class="panel-box">
       <div class="panel-box-header">
         <span class="panel-box-title">// System Log</span>
-        <button class="vis-btn" onclick="clearLog()">Clear</button>
       </div>
-      <div class="panel-box-body" style="padding:0.75rem">
+      <div class="panel-box-body" style="padding:0.5rem">
         <div class="alert-log" id="alert-log">
-          <div class="alert-entry info">
-            <span class="alert-time">T+0:00</span>
-            <span class="alert-msg info">CubeSat systems initialized. All subsystems nominal.</span>
-          </div>
+          <div class="alert-entry info"><span class="alert-time">T+00:00</span><span class="alert-msg info">Systems initialized. Awaiting mission start.</span></div>
         </div>
       </div>
     </div>
-
   </div>
 </div>
 
 <script>
 // ================================================================
-// CUBESAT SYSTEMS SIMULATOR — Module 03
-// Space Systems Lab
+// CUBESAT SYSTEMS SIMULATOR — Dynamic Mission Control Edition
 // ================================================================
 
-// ===== DATA =====
+const INFO_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" style="vertical-align: middle;"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>`;
+const POWER_LIMIT = 8.0;
+const TEMP_CRITICAL = 60.0;
+const MISSION_DURATION = 60.0;
+
 const SUBSYSTEMS = [
-  {
-    id: 'eps', name: 'EPS', fullName: 'Electrical Power System',
-    icon: '⚡', color: '#f59e0b',
-    mass: 185, basePower: 0.8,
-    status: 'nominal',
-    desc: 'The EPS manages all power generation, storage, and distribution aboard the CubeSat. Solar panels charge lithium-ion batteries, which power all subsystems through regulated voltage buses (3.3V, 5V, unregulated). Power budgeting is one of the most critical constraints in small satellite design.',
+  { id: 'eps', name: 'EPS', fullName: 'Electrical Power System', icon: '⚡', color: '#f59e0b', status: 'nominal', desc: 'Manages generation, storage, and distribution. Increased capacity adds mass penalty.',
     params: [
-      { id: 'solar_eff', label: 'Solar Panel Efficiency', min: 20, max: 30, val: 26, unit: '%' },
-      { id: 'batt_cap', label: 'Battery Capacity', min: 5, max: 40, val: 20, unit: 'Wh' },
-      { id: 'solar_area', label: 'Panel Area', min: 0.01, max: 0.06, val: 0.03, unit: 'm²', step: 0.001 },
+      { id: 'solar_eff', label: 'Cell Efficiency', min: 20, max: 32, val: 26, unit: '%', tooltip: 'Higher efficiency yields more power but requires heavier, multi-junction cells.' },
+      { id: 'batt_cap', label: 'Battery Capacity', min: 10, max: 60, val: 20, unit: 'Wh', tooltip: 'More capacity allows longer operations in eclipse, linearly increasing mass (+5g/Wh).' },
+      { id: 'solar_area', label: 'Panel Area', min: 0.01, max: 0.06, val: 0.03, unit: 'm²', step: 0.005, tooltip: 'Deployable panels increase area but add significant structural mass.' }
     ],
-    metrics: [
-      { key: 'Generated', valId: 'eps-gen', unit: 'W', color: '#f59e0b' },
-      { key: 'Battery', valId: 'eps-batt', unit: '%', color: '#22c55e' },
-      { key: 'Bus Voltage', valId: 'eps-volt', unit: 'V', color: '#3b7eff' },
-      { key: 'Eclipse Time', valId: 'eps-ecl', unit: '%', color: '#6b7280' },
-    ],
-    datasheet: 'GomSpace NanoPower P31u · 20Wh Li-ion · 3x3 solar cells'
-  },
-  {
-    id: 'comms', name: 'COMMS', fullName: 'Communications System',
-    icon: '📡', color: '#3b7eff',
-    mass: 95, basePower: 1.8,
-    status: 'nominal',
-    desc: 'The COMMS subsystem handles all radio communication with ground stations. CubeSats typically use UHF (437 MHz) for telemetry and command, and UHF/VHF or S-band for data downlink. Link budget calculations determine how much data can be transmitted per pass — typically 5–15 minutes per day.',
+    metrics: [{ key: 'Generated', valId: 'eps-gen', unit: 'W', color: '#f59e0b' }, { key: 'Battery', valId: 'eps-batt', unit: '%', color: '#22c55e' }, { key: 'Eclipse Time', valId: 'eps-ecl', unit: 'min', color: '#6b7280' }], datasheet: 'GomSpace P31u · Li-ion' },
+  { id: 'comms', name: 'COMMS', fullName: 'Communications System', icon: '📡', color: '#3b7eff', status: 'nominal', desc: 'UHF for telemetry. The link budget must overcome Signal Loss and maintain margin over receiver limit.',
     params: [
-      { id: 'tx_power', label: 'TX Power', min: 0.1, max: 2.0, val: 0.6, unit: 'W', step: 0.05 },
-      { id: 'data_rate', label: 'Data Rate', min: 1.2, max: 9.6, val: 4.8, unit: 'kbps', step: 0.1 },
-      { id: 'gs_elev', label: 'Min Ground Elevation', min: 5, max: 30, val: 10, unit: '°' },
+      { id: 'tx_power', label: 'Transmit Power', min: 0.2, max: 3.0, val: 0.6, unit: 'W', step: 0.1, tooltip: 'Higher transmission power directly increases EPS base power draw and heat load.' },
+      { id: 'data_rate', label: 'Data Rate', min: 1.2, max: 19.2, val: 4.8, unit: 'kbps', step: 0.1, tooltip: 'Higher rate speeds up downlink but worsens receiver sensitivity requirements.' },
+      { id: 'gs_elev', label: 'Min Elevation', min: 5, max: 30, val: 10, unit: '°', tooltip: 'Restricting to higher elevations reduces contact time but guarantees cleaner signal.' }
     ],
-    metrics: [
-      { key: 'Link Margin', valId: 'comms-margin', unit: 'dB', color: '#3b7eff' },
-      { key: 'Daily Contact', valId: 'comms-contact', unit: 'min', color: '#22c55e' },
-      { key: 'Data/Day', valId: 'comms-data', unit: 'MB', color: '#a855f7' },
-      { key: 'Freq Band', valId: 'comms-freq', unit: '', color: '#6b7280' },
-    ],
-    datasheet: 'Endurosat UHF ANT III · 437.525 MHz · Half-duplex'
-  },
-  {
-    id: 'obc', name: 'OBC', fullName: 'Onboard Computer',
-    icon: '🖥️', color: '#a855f7',
-    mass: 90, basePower: 0.6,
-    status: 'nominal',
-    desc: 'The OBC is the brain of the satellite. It runs the flight software, manages all subsystems, processes sensor data, executes commands from ground, and handles fault detection. CubeSat OBCs typically use ARM Cortex processors running FreeRTOS or a custom RTOS. Data storage is via SD cards or flash memory.',
+    metrics: [{ key: 'Link Margin', valId: 'comms-margin', unit: 'dB', color: '#3b7eff' }, { key: 'Daily Contact', valId: 'comms-contact', unit: 'min', color: '#22c55e' }, { key: 'Data/Day', valId: 'comms-data', unit: 'MB', color: '#a855f7' }], datasheet: 'UHF Transceiver · Half-duplex' },
+  { id: 'obc', name: 'OBC', fullName: 'Onboard Computer', icon: '🖥️', color: '#a855f7', status: 'nominal', desc: 'Runs flight software (RTOS) and fault detection. Higher CPU clocks use more baseline power.',
     params: [
-      { id: 'cpu_freq', label: 'CPU Frequency', min: 8, max: 200, val: 48, unit: 'MHz' },
-      { id: 'mem', label: 'Flash Storage', min: 1, max: 64, val: 8, unit: 'GB' },
-      { id: 'watchdog', label: 'Watchdog Interval', min: 5, max: 60, val: 15, unit: 'min' },
+      { id: 'cpu_freq', label: 'CPU Frequency', min: 8, max: 120, val: 48, unit: 'MHz', tooltip: 'Clock speed affects processing overhead and base power consumption linearly.' },
+      { id: 'mem', label: 'Flash Storage', min: 2, max: 64, val: 8, unit: 'GB', tooltip: 'Amount of onboard telemetry/payload data storage.' }
     ],
-    metrics: [
-      { key: 'CPU Load', valId: 'obc-cpu', unit: '%', color: '#a855f7' },
-      { key: 'Memory Used', valId: 'obc-mem', unit: '%', color: '#3b7eff' },
-      { key: 'Uptime', valId: 'obc-uptime', unit: 'hrs', color: '#22c55e' },
-      { key: 'Resets', valId: 'obc-resets', unit: '', color: '#f59e0b' },
-    ],
-    datasheet: 'GomSpace NanoMind A3200 · ARM Cortex-M3 · FreeRTOS'
-  },
-  {
-    id: 'adcs', name: 'ADCS', fullName: 'Attitude Determination & Control',
-    icon: '🧭', color: '#00d4aa',
-    mass: 120, basePower: 0.5,
-    status: 'nominal',
-    desc: 'The ADCS determines and controls the satellite\'s orientation. Sensors include magnetometers, sun sensors, and gyroscopes. Actuators are magnetorquers and reaction wheels. For a 3U CubeSat, a 3-axis magnetorquer system is common for detumbling and coarse pointing, while a reaction wheel adds precise control.',
+    metrics: [{ key: 'CPU Load', valId: 'obc-cpu', unit: '%', color: '#a855f7' }, { key: 'Uptime', valId: 'obc-uptime', unit: 'hrs', color: '#22c55e' }, { key: 'Resets', valId: 'obc-resets', unit: '', color: '#f59e0b' }], datasheet: 'Cortex-M3 · FreeRTOS' },
+  { id: 'adcs', name: 'ADCS', fullName: 'Attitude Determination & Control', icon: '🧭', color: '#00d4aa', status: 'nominal', desc: 'Determines orientation. Faster reaction wheels provide better pointing but add mass/power.',
     params: [
-      { id: 'point_acc', label: 'Pointing Accuracy', min: 1, max: 30, val: 5, unit: '°' },
-      { id: 'stab_time', label: 'Stabilization Time', min: 30, max: 300, val: 90, unit: 'min' },
-      { id: 'rw_speed', label: 'Reaction Wheel Speed', min: 0, max: 6000, val: 2000, unit: 'RPM', step: 100 },
+      { id: 'rw_speed', label: 'Wheel Max Speed', min: 1000, max: 8000, val: 2000, unit: 'RPM', step: 500, tooltip: 'Higher RPM wheels increase mass (larger flywheels) and stabilization capability.' },
+      { id: 'point_acc', label: 'Required Pointing', min: 0.5, max: 15, val: 5, unit: '°', step: 0.5, tooltip: 'Tighter pointing requires wheels to run continuously, drawing more active power.' }
     ],
-    metrics: [
-      { key: 'Point Error', valId: 'adcs-err', unit: '°', color: '#00d4aa' },
-      { key: 'Angular Rate', valId: 'adcs-rate', unit: '°/s', color: '#3b7eff' },
-      { key: 'Mode', valId: 'adcs-mode', unit: '', color: '#a855f7' },
-      { key: 'Detumbled', valId: 'adcs-det', unit: '', color: '#22c55e' },
-    ],
-    datasheet: 'CubeADCS 3-Axis · iMTQ Magnetorquer · ±15 Am² dipole'
-  },
-  {
-    id: 'thermal', name: 'THERMAL', fullName: 'Thermal Management System',
-    icon: '🌡️', color: '#ef4444',
-    mass: 45, basePower: 0.2,
-    status: 'nominal',
-    desc: 'In space, heat can only be transferred by radiation. CubeSats cycle through extreme temperatures — from +120°C in sunlight to -100°C in eclipse. Passive thermal control (surface coatings, MLI blankets) handles most of this. Heaters protect sensitive components during cold soaks.',
+    metrics: [{ key: 'Point Error', valId: 'adcs-err', unit: '°', color: '#00d4aa' }, { key: 'Mode', valId: 'adcs-mode', unit: '', color: '#a855f7' }, { key: 'Detumbled', valId: 'adcs-det', unit: '', color: '#22c55e' }], datasheet: '3-Axis · iMTQ Magnetorquers' },
+  { id: 'thermal', name: 'THERMAL', fullName: 'Thermal Management', icon: '🌡️', color: '#ef4444', status: 'nominal', desc: 'Passive MLI and active heaters prevent components from exceeding operating bounds.',
     params: [
-      { id: 'heater_pwr', label: 'Heater Power', min: 0, max: 2, val: 0.3, unit: 'W', step: 0.05 },
-      { id: 'surface_emit', label: 'Surface Emissivity', min: 0.05, max: 0.9, val: 0.8, unit: '', step: 0.01 },
-      { id: 'absorb', label: 'Solar Absorptivity', min: 0.1, max: 0.9, val: 0.5, unit: '', step: 0.01 },
+      { id: 'heater_pwr', label: 'Active Heater', min: 0, max: 3, val: 0.5, unit: 'W', step: 0.1, tooltip: 'Dedicated active heater power added directly to the power budget.' },
+      { id: 'absorb', label: 'Solar Absorptivity', min: 0.1, max: 0.9, val: 0.5, unit: 'α', step: 0.05, tooltip: 'Coating property determining heat absorption from the sun.' }
     ],
-    metrics: [
-      { key: 'Internal Temp', valId: 'therm-int', unit: '°C', color: '#ef4444' },
-      { key: 'Panel Temp', valId: 'therm-pan', unit: '°C', color: '#f59e0b' },
-      { key: 'Hot Soak', valId: 'therm-hot', unit: '°C', color: '#ef4444' },
-      { key: 'Cold Soak', valId: 'therm-cold', unit: '°C', color: '#3b7eff' },
-    ],
-    datasheet: 'Passive MLI + surface coatings · NTC thermistor sensors'
-  },
-  {
-    id: 'payload', name: 'PAYLOAD', fullName: 'Payload / Mission Instrument',
-    icon: '🔭', color: '#ec4899',
-    mass: 300, basePower: 1.5,
-    status: 'nominal',
-    desc: 'The payload is the reason the mission exists — everything else exists to support it. Typical 3U CubeSat payloads include Earth observation cameras, atmospheric sensors, technology demonstrations, or AIS receivers. The payload drives mission requirements: orbit, pointing accuracy, downlink bandwidth, and power budget.',
+    metrics: [{ key: 'Internal Temp', valId: 'therm-int', unit: '°C', color: '#ef4444' }, { key: 'Panel Temp', valId: 'therm-pan', unit: '°C', color: '#f59e0b' }, { key: 'Status', valId: 'therm-stat', unit: '', color: '#22c55e' }], datasheet: 'Passive MLI + Active Polyimide' },
+  { id: 'payload', name: 'PAYLOAD', fullName: 'Mission Instrument', icon: '🔭', color: '#ec4899', status: 'nominal', desc: 'The mission justification. Requires balancing its active power draw against the EPS constraints.',
     params: [
-      { id: 'payload_pwr', label: 'Active Power Draw', min: 0.5, max: 5, val: 1.5, unit: 'W', step: 0.1 },
-      { id: 'duty_cycle', label: 'Duty Cycle', min: 5, max: 60, val: 20, unit: '%' },
-      { id: 'data_gen', label: 'Data Generation Rate', min: 0.1, max: 10, val: 2, unit: 'MB/pass', step: 0.1 },
+      { id: 'payload_pwr', label: 'Active Draw', min: 1, max: 8, val: 2.0, unit: 'W', step: 0.1, tooltip: 'Power drawn when instrument is active. Directly impacts total budget.' },
+      { id: 'duty_cycle', label: 'Duty Cycle', min: 5, max: 100, val: 20, unit: '%', step: 5, tooltip: 'Percentage of the orbit the payload is active. Affects Average Power and Data Gen.' },
+      { id: 'data_gen', label: 'Data Gen Rate', min: 1, max: 20, val: 2, unit: 'MB/pass', step: 1, tooltip: 'Bigger sensors generate more data, which must be offloaded by COMMS.' }
     ],
-    metrics: [
-      { key: 'Avg Power', valId: 'pay-avg', unit: 'W', color: '#ec4899' },
-      { key: 'Data/Day', valId: 'pay-data', unit: 'MB', color: '#3b7eff' },
-      { key: 'Obs Time', valId: 'pay-obs', unit: 'min/day', color: '#22c55e' },
-      { key: 'Mission Fit', valId: 'pay-fit', unit: '', color: '#f59e0b' },
-    ],
-    datasheet: 'Example: 5MP Earth obs camera · 2592×1944px · JPEG compression'
-  },
+    metrics: [{ key: 'Avg Power', valId: 'pay-avg', unit: 'W', color: '#ec4899' }, { key: 'Data/Day', valId: 'pay-data', unit: 'MB', color: '#3b7eff' }, { key: 'Budget Status', valId: 'pay-fit', unit: '', color: '#f59e0b' }], datasheet: 'Custom Instrument' }
 ];
 
 const SCENARIOS = [
-  { id: 'eclipse', name: 'Extended Eclipse', tag: 'Power', desc: 'Satellite enters shadow of Earth for 40 min — battery drains rapidly. Observe power management.', effect: () => triggerEclipse() },
-  { id: 'bit_flip', name: 'Single Event Upset', tag: 'OBC', desc: 'Cosmic ray causes a bit flip in OBC memory. Watchdog timer triggers a reset.', effect: () => triggerBitFlip() },
-  { id: 'tumble', name: 'Post-Launch Tumble', tag: 'ADCS', desc: 'After deployment from launch vehicle, satellite is tumbling. B-dot algorithm engages.', effect: () => triggerTumble() },
-  { id: 'antenna', name: 'Antenna Deployment Fail', tag: 'COMMS', desc: 'Antenna deployment mechanism fails to actuate. Link margin drops to critically low.', effect: () => triggerAntennaFail() },
-  { id: 'thermal_fail', name: 'Thermal Runaway', tag: 'THERMAL', desc: 'Heater stuck on — internal temperature rising above battery operating limit.', effect: () => triggerThermal() },
+  { id: 'eclipse', name: 'Extended Eclipse', tag: 'EPS', desc: 'Satellite enters shadow of Earth. Solar array zeroes out, relying entirely on battery reserves.', effect: () => triggerEclipse() },
+  { id: 'bit_flip', name: 'SEU Bit Flip', tag: 'OBC', desc: 'Cosmic ray causes memory flip. Watchdog catches failure and soft-reboots processor.', effect: () => triggerBitFlip() },
+  { id: 'tumble', name: 'High-Rate Tumble', tag: 'ADCS', desc: 'Deployment imparts severe spin. B-dot detumble algorithm engages to stabilize.', effect: () => triggerTumble() },
+  { id: 'antenna', name: 'Antenna Deploy Fail', tag: 'COMMS', desc: 'Mechanism fails to snap antenna open. Drops RX/TX gain drastically, tanking link margin.', effect: () => triggerAntennaFail() },
+  { id: 'thermal_fail', name: 'Heater Runaway', tag: 'THERMAL', desc: 'Solid state relay fails closed. Heater stuck ON, rapidly cooking internal components past critical limits.', effect: () => triggerThermal() },
 ];
 
-// State
 let simState = {
-  activeSubsys: 'eps',
-  activeTab: 'structure',
-  animating: true,
-  exploded: false,
-  activeScenario: null,
-  frameCount: 0,
-  rotAngle: 0,
-  // live values
-  battLevel: 87,
-  totalPower: 4.2,
-  internalTemp: 18,
-  // per-subsystem overrides from sliders
-  params: {},
-  // scenario flags
-  inEclipse: false,
-  tumbling: false,
-  antennaFail: false,
-  thermalRunaway: false,
-  obcReset: false,
-  obcResets: 0,
-  uptime: 0,
-  alertTime: 0,
+  activeSubsys: 'eps', activeTab: 'structure', animating: true, exploded: false, rotAngle: Math.PI / 6,
+  frameCount: 0, battLevel: 87, internalTemp: 18.0, params: {},
+  inEclipse: false, tumbling: false, antennaFail: false, thermalRunaway: false, obcReset: false,
+  obcResets: 0, uptime: 0, totalDynMass: 0, totalDynPwr: 0,
+  
+  // Mission Tracking
+  missionActive: false, missionTimer: 0, armedScenarios: []
 };
 
-// Init params from SUBSYSTEMS
-SUBSYSTEMS.forEach(s => {
-  s.params.forEach(p => {
-    simState.params[p.id] = p.val;
-  });
-});
+SUBSYSTEMS.forEach(s => s.params.forEach(p => simState.params[p.id] = p.val));
 
-// ===== LOG =====
-let logTime = 0;
-function addLog(type, msg) {
-  logTime++;
-  const log = document.getElementById('alert-log');
-  const entry = document.createElement('div');
-  entry.className = 'alert-entry ' + type;
-  const mm = String(Math.floor(logTime / 60)).padStart(1, '0');
-  const ss = String(logTime % 60).padStart(2, '0');
-  entry.innerHTML = `<span class="alert-time">T+${mm}:${ss}</span><span class="alert-msg ${type}">${msg}</span>`;
-  log.prepend(entry);
-  // Max 20 entries
-  while (log.children.length > 20) log.removeChild(log.lastChild);
+// ===== GLOBAL TOOLTIP LOGIC =====
+function showTooltip(e, text) {
+  const tt = document.getElementById('global-tooltip');
+  tt.innerHTML = text; tt.classList.add('show');
+  const rect = e.currentTarget.getBoundingClientRect();
+  let top = rect.bottom + 8, left = rect.left - 110 + (rect.width / 2);
+  if (left + 240 > window.innerWidth) left = window.innerWidth - 250;
+  if (left < 10) left = 10;
+  if (top + tt.offsetHeight > window.innerHeight) top = rect.top - tt.offsetHeight - 8;
+  tt.style.top = top + 'px'; tt.style.left = left + 'px';
 }
-function clearLog() { document.getElementById('alert-log').innerHTML = ''; }
+function hideTooltip() { document.getElementById('global-tooltip').classList.remove('show'); }
 
-// ===== BUILD UI =====
+// ===== DYNAMIC PHYSICS =====
+function getDynMetrics(subId) {
+  const p = simState.params; let mass = 0, pwr = 0;
+  if (subId === 'eps') { mass = 185 + (p.batt_cap - 20) * 5 + (p.solar_area - 0.03) * 2000; pwr = 0.8; }
+  else if (subId === 'comms') { mass = 95; pwr = 1.0 + (p.tx_power - 0.6) * 1.5; }
+  else if (subId === 'obc') { mass = 90; pwr = 0.4 + (p.cpu_freq - 48) * 0.004; }
+  else if (subId === 'adcs') { mass = 120 + (p.rw_speed - 2000) * 0.015; pwr = 0.5 + (15 - p.point_acc) * 0.02; }
+  else if (subId === 'thermal') { mass = 45; pwr = 0.1 + p.heater_pwr; }
+  else if (subId === 'payload') { mass = 300; pwr = p.payload_pwr * (p.duty_cycle / 100); }
+  return { m: Math.round(mass), p: parseFloat(pwr.toFixed(2)) };
+}
+
+function getSubsystemHealth(id) {
+  let h = 100;
+  if (id === 'eps' && simState.inEclipse) h = Math.max(0, simState.battLevel);
+  if (id === 'comms' && simState.antennaFail) h = 20;
+  if (id === 'obc' && simState.obcReset) h = 30;
+  if (id === 'adcs' && simState.tumbling) h = 45;
+  if (id === 'thermal' && simState.thermalRunaway) h = Math.max(0, 100 - ((simState.internalTemp - 18) / (TEMP_CRITICAL - 18) * 100));
+  return Math.round(h);
+}
+
+// ===== UI BUILDERS =====
 function buildSubsysGrid() {
   const grid = document.getElementById('subsys-grid');
   grid.innerHTML = SUBSYSTEMS.map(s => `
-    <button class="subsys-btn ${s.id === simState.activeSubsys ? 'active' : ''}"
-      style="${s.id === simState.activeSubsys ? `color:${s.color};border-color:${s.color}` : ''}"
-      onclick="selectSubsys('${s.id}')">
-      <span class="subsys-icon">${s.icon}</span>
-      <div>
-        <div class="subsys-name" style="color:${s.id === simState.activeSubsys ? s.color : ''}">${s.name}</div>
-        <div class="subsys-status" id="subsys-status-${s.id}">${s.status.toUpperCase()}</div>
-      </div>
-    </button>
-  `).join('');
+    <button class="subsys-btn ${s.id === simState.activeSubsys ? 'active' : ''}" style="${s.id === simState.activeSubsys ? `border-color:${s.color};` : ''}" onclick="selectSubsys('${s.id}')">
+      <span class="subsys-icon">${s.icon}</span><div><div class="subsys-name" style="color:${s.id === simState.activeSubsys ? s.color : 'var(--text)'}">${s.name}</div><div class="subsys-status" id="subsys-status-${s.id}" style="color:${getStatusColor(s.status)}">${s.status.toUpperCase()}</div></div>
+    </button>`).join('');
 }
+function getStatusColor(status) { return { nominal: 'var(--accent)', warning: 'var(--warn)', fault: 'var(--red)', critical: 'var(--red)', reset: 'var(--warn)', detumble: 'var(--warn)' }[status] || 'var(--muted)'; }
 
 function buildDetailPanel(subsysId) {
   const s = SUBSYSTEMS.find(x => x.id === subsysId);
-  const panel = document.getElementById('detail-content');
-  document.getElementById('detail-panel-title').textContent = `// ${s.name} — ${s.fullName}`;
+  document.getElementById('detail-panel-title').textContent = `// ${s.name} Data`;
 
-  panel.innerHTML = `
-    <div class="detail-header">
-      <span class="detail-icon">${s.icon}</span>
-      <div>
-        <div class="detail-title" style="color:${s.color}">${s.fullName}</div>
-        <div class="detail-subtitle">${s.datasheet}</div>
-      </div>
-    </div>
-
+  document.getElementById('detail-content').innerHTML = `
+    <div class="detail-header"><span class="detail-icon">${s.icon}</span><div><div class="detail-title" style="color:${s.color}">${s.fullName}</div><div class="detail-subtitle">${s.datasheet}</div></div></div>
     <div class="detail-desc">${s.desc}</div>
-
-    <div class="metrics-grid">
-      ${s.metrics.map(m => `
-        <div class="metric-card">
-          <span class="metric-val" id="${m.valId}" style="color:${m.color}">—</span>
-          <span class="metric-key">${m.key}${m.unit ? ' (' + m.unit + ')' : ''}</span>
-        </div>
-      `).join('')}
+    <div class="metrics-grid">${s.metrics.map(m => `<div class="metric-card"><span class="metric-val" id="${m.valId}" style="color:${m.color}">—</span><span class="metric-key">${m.key}${m.unit ? ' (' + m.unit + ')' : ''}</span></div>`).join('')}</div>
+    <div style="margin-top:5px">
+      ${s.params.map(p => `
+        <div class="param-group">
+          <div class="param-row"><span class="param-label">${p.label}<button class="info-btn" onmouseenter="showTooltip(event, \`${p.tooltip}\`)" onmouseleave="hideTooltip()">${INFO_ICON}</button></span><span class="param-val" id="pval-${p.id}">${p.val} ${p.unit}</span></div>
+          <input type="range" min="${p.min}" max="${p.max}" value="${p.val}" step="${p.step || 1}" id="pslider-${p.id}" ${simState.missionActive ? 'disabled class="locked"' : ''} oninput="updateParam('${p.id}', this.value, '${p.unit}')">
+        </div>`).join('')}
     </div>
-
-    ${s.params.map(p => `
-      <div class="param-group">
-        <div class="param-row">
-          <span class="param-label">${p.label}</span>
-          <span class="param-val" id="pval-${p.id}">${p.val} ${p.unit}</span>
-        </div>
-        <input type="range" min="${p.min}" max="${p.max}" value="${p.val}"
-          step="${p.step || 1}" id="pslider-${p.id}"
-          oninput="updateParam('${p.id}', this.value, '${p.unit}')">
-      </div>
-    `).join('')}
-
-    <div style="margin-top:0.25rem">
-      <div class="health-bar-wrapper">
-        <div class="health-label-row">
-          <span class="health-label">Subsystem Health</span>
-          <span class="health-val" id="health-${s.id}" style="color:${s.color}">100%</span>
-        </div>
-        <div class="health-bar-track">
-          <div class="health-bar-fill" id="healthbar-${s.id}" style="width:100%;background:${s.color}"></div>
-        </div>
-      </div>
-    </div>
+    <div class="health-bar-wrapper"><div class="health-label-row"><span class="health-label">Subsystem Health</span><span class="health-val" id="health-${s.id}" style="color:${s.color}">100%</span></div><div class="health-bar-track"><div class="health-bar-fill" id="healthbar-${s.id}" style="width:100%;background:${s.color}"></div></div></div>
   `;
-
   updateMetrics();
 }
 
 function buildBudget() {
-  const tbody = document.getElementById('budget-tbody');
-  const totalMass = SUBSYSTEMS.reduce((a, s) => a + s.mass, 0);
-  const totalPwr = SUBSYSTEMS.reduce((a, s) => a + s.basePower, 0);
+  let tMass = 0, tPwr = 0;
+  const rows = SUBSYSTEMS.map(s => { const dyn = getDynMetrics(s.id); tMass += dyn.m; tPwr += dyn.p; return { ...s, m: dyn.m, p: dyn.p }; });
+  simState.totalDynMass = tMass; simState.totalDynPwr = tPwr;
 
-  tbody.innerHTML = SUBSYSTEMS.map(s => {
-    const massBar = Math.round((s.mass / totalMass) * 80);
-    const pwrBar = Math.round((s.basePower / totalPwr) * 80);
-    const pct = ((s.basePower / totalPwr) * 100).toFixed(0);
-    return `
-      <tr onclick="selectSubsys('${s.id}')" style="cursor:pointer">
-        <td><span class="sys-dot" style="background:${s.color}"></span>${s.fullName.split(' ').slice(-2).join(' ')}</td>
-        <td>${s.mass}g</td>
-        <td>${s.basePower.toFixed(1)}W</td>
-        <td>
-          <div class="bar-cell">
-            <span style="color:var(--muted);font-size:0.68rem">${pct}%</span>
-            <div class="mini-bar" style="width:${pwrBar}px;background:${s.color};opacity:0.7"></div>
-          </div>
-        </td>
-      </tr>`;
-  }).join('') + `
-    <tr class="total-row">
-      <td>TOTAL</td>
-      <td>${totalMass}g</td>
-      <td>${totalPwr.toFixed(1)}W</td>
-      <td></td>
-    </tr>`;
+  document.getElementById('budget-tbody').innerHTML = rows.map(s => {
+    const pct = ((s.p / tPwr) * 100).toFixed(0);
+    return `<tr onclick="selectSubsys('${s.id}')" style="cursor:pointer"><td><span class="sys-dot" style="background:${s.color}"></span>${s.name}</td><td>${s.m}g</td><td>${s.p.toFixed(2)}W</td><td><div class="bar-cell"><span style="color:var(--muted);font-size:0.65rem">${pct}%</span><div class="mini-bar" style="width:${Math.round((s.p/tPwr)*60)}px;background:${s.color};"></div></div></td></tr>`;
+  }).join('') + `<tr class="total-row"><td style="color:${tMass>4000?'var(--red)':'inherit'}">TOTAL</td><td style="color:${tMass>4000?'var(--red)':'inherit'}">${tMass}g</td><td>${tPwr.toFixed(2)}W</td><td></td></tr>`;
+  
+  const pwrEl = document.getElementById('pwr-limit-val');
+  pwrEl.textContent = `${tPwr.toFixed(2)}W / ${POWER_LIMIT}W Max`;
+  pwrEl.style.color = tPwr > POWER_LIMIT ? 'var(--red)' : 'var(--accent)';
+  
+  const btn = document.getElementById('launch-btn');
+  if (tPwr > POWER_LIMIT) { btn.classList.add('disabled'); btn.textContent = 'POWER OVERLOAD'; } 
+  else { btn.classList.remove('disabled'); btn.textContent = 'Begin Mission'; }
 }
 
 function buildScenarios() {
-  const container = document.getElementById('scenario-btns');
-  container.innerHTML = SCENARIOS.map(sc => `
-    <button class="scenario-btn ${simState.activeScenario === sc.id ? 'active' : ''}"
-      id="sc-${sc.id}" onclick="triggerScenario('${sc.id}')">
-      <span>${sc.name}</span>
-      <span class="scenario-tag">[${sc.tag}]</span>
-    </button>
-  `).join('');
+  document.getElementById('scenario-btns').innerHTML = SCENARIOS.map(sc => {
+    const isArmed = simState.armedScenarios.includes(sc.id);
+    return `<button class="scenario-btn ${isArmed ? 'armed' : ''} ${simState.missionActive ? 'locked' : ''}" onclick="toggleScenarioArm('${sc.id}')">
+      <span>${isArmed ? '⏣ ARMED: ' : ''}${sc.name}</span>
+      <span class="scenario-tag">[${sc.tag}]<div class="info-btn" onclick="event.stopPropagation()" onmouseenter="showTooltip(event, \`${sc.desc}\`)" onmouseleave="hideTooltip()">${INFO_ICON}</div></span>
+    </button>`;
+  }).join('');
 }
 
-// ===== METRICS COMPUTATION =====
+// ===== REALTIME UPDATES =====
 function updateMetrics() {
-  const p = simState.params;
-  const s = SUBSYSTEMS.find(x => x.id === simState.activeSubsys);
+  const p = simState.params; const s = SUBSYSTEMS.find(x => x.id === simState.activeSubsys);
   if (!s) return;
 
-  const irrad = 1361; // W/m²
+  if (s.id === 'eps') { setText('eps-gen', simState.inEclipse ? '0.0' : (1361 * p.solar_area * (p.solar_eff/100) * 0.8).toFixed(1)); setText('eps-batt', simState.battLevel.toFixed(0)); setText('eps-ecl', '35.4'); } 
+  else if (s.id === 'comms') { const txdBm = 10*Math.log10(p.tx_power*1000); const gain = simState.antennaFail ? -15 : 2; setText('comms-margin', (txdBm + (-139.2) + gain + 12 - (-115)).toFixed(1)); const cM = 5 * ((40 - p.gs_elev) / 4).toFixed(0); setText('comms-contact', cM); setText('comms-data', (p.data_rate * cM * 60 / 8 / 1024).toFixed(2)); } 
+  else if (s.id === 'obc') { setText('obc-cpu', simState.obcReset ? '0' : Math.round(15 + (p.cpu_freq / 120 * 40))); setText('obc-uptime', (simState.uptime / 3600).toFixed(1)); setText('obc-resets', simState.obcResets); } 
+  else if (s.id === 'adcs') { setText('adcs-err', simState.tumbling ? (Math.random()*20+10).toFixed(1) : p.point_acc.toFixed(1)); setText('adcs-mode', simState.tumbling ? 'B-DOT (DETUMBLE)' : 'REACTION WHEEL'); setText('adcs-det', simState.tumbling ? 'NO' : 'YES'); } 
+  else if (s.id === 'thermal') { setText('therm-int', simState.internalTemp.toFixed(1)); setText('therm-pan', simState.inEclipse ? '-85' : '+62'); setText('therm-stat', simState.thermalRunaway ? 'CRITICAL' : 'NOMINAL'); } 
+  else if (s.id === 'payload') { setText('pay-avg', (p.payload_pwr * (p.duty_cycle / 100)).toFixed(2)); setText('pay-data', (p.data_gen * 5).toFixed(1)); setText('pay-fit', simState.totalDynPwr > POWER_LIMIT ? '⚠ TIGHT' : '✓ OK'); }
 
-  if (s.id === 'eps') {
-    const gen = (irrad * (p.solar_area || 0.03) * (p.solar_eff || 26) / 100).toFixed(1);
-    const batt = simState.battLevel.toFixed(0);
-    const ecl = simState.inEclipse ? '42' : '35';
-    setText('eps-gen', gen);
-    setText('eps-batt', batt);
-    setText('eps-volt', '3.7');
-    setText('eps-ecl', ecl);
-  } else if (s.id === 'comms') {
-    const txdBm = 10 * Math.log10((p.tx_power || 0.6) * 1000);
-    const fsl = 147; // approx free-space loss at 437MHz, 500km
-    const margin = simState.antennaFail ? (-8).toFixed(1) : (txdBm - fsl + 82).toFixed(1);
-    const contact = ((90 - (p.gs_elev || 10) * 2)).toFixed(0);
-    const data = ((p.data_rate || 4.8) * contact * 60 / 8 / 1024).toFixed(2);
-    setText('comms-margin', margin);
-    setText('comms-contact', contact);
-    setText('comms-data', data);
-    setText('comms-freq', 'UHF');
-  } else if (s.id === 'obc') {
-    const cpu = simState.obcReset ? '0' : Math.round(20 + (p.cpu_freq || 48) / 200 * 40);
-    const mem = Math.round(15 + (p.mem || 8) / 64 * 30);
-    setText('obc-cpu', cpu);
-    setText('obc-mem', mem);
-    setText('obc-uptime', (simState.uptime / 3600).toFixed(1));
-    setText('obc-resets', simState.obcResets);
-  } else if (s.id === 'adcs') {
-    const err = simState.tumbling ? (Math.random() * 20 + 10).toFixed(1) : (p.point_acc || 5).toFixed(1);
-    const rate = simState.tumbling ? (Math.random() * 5 + 2).toFixed(2) : '0.02';
-    const mode = simState.tumbling ? 'DETUMBLE' : 'FINE POINT';
-    setText('adcs-err', err);
-    setText('adcs-rate', rate);
-    setText('adcs-mode', mode);
-    setText('adcs-det', simState.tumbling ? 'NO' : 'YES');
-  } else if (s.id === 'thermal') {
-    const intTemp = simState.thermalRunaway
-      ? Math.min(65, 18 + simState.frameCount * 0.05).toFixed(1)
-      : simState.inEclipse ? '-12' : simState.internalTemp.toFixed(1);
-    setText('therm-int', intTemp);
-    setText('therm-pan', simState.inEclipse ? '-85' : '+62');
-    setText('therm-hot', '+120');
-    setText('therm-cold', '-95');
-  } else if (s.id === 'payload') {
-    const avgPwr = ((p.payload_pwr || 1.5) * (p.duty_cycle || 20) / 100).toFixed(2);
-    const passes = 5;
-    const dataDay = ((p.data_gen || 2) * passes).toFixed(1);
-    const obsMin = ((p.duty_cycle || 20) / 100 * 96 * 60 / 60).toFixed(0);
-    const fits = parseFloat(avgPwr) < 1.2 ? '✓ OK' : parseFloat(avgPwr) < 2 ? '⚠ Tight' : '✗ Over';
-    setText('pay-avg', avgPwr);
-    setText('pay-data', dataDay);
-    setText('pay-obs', obsMin);
-    setText('pay-fit', fits);
+  SUBSYSTEMS.forEach(sub => {
+    const h = getSubsystemHealth(sub.id);
+    const bar = document.getElementById('healthbar-' + sub.id); const txt = document.getElementById('health-' + sub.id);
+    if (bar) { bar.style.width = h + '%'; bar.style.background = h > 60 ? sub.color : h > 25 ? 'var(--warn)' : 'var(--red)'; }
+    if (txt) txt.textContent = h + '%';
+  });
+}
+
+function setText(id, val) { const el = document.getElementById(id); if (el) el.textContent = val; }
+let logTime = 0;
+function addLog(type, msg) {
+  logTime++; const log = document.getElementById('alert-log'); const entry = document.createElement('div'); entry.className = 'alert-entry ' + type;
+  entry.innerHTML = `<span class="alert-time">T+${String(Math.floor(logTime/60)).padStart(1,'0')}:${String(logTime%60).padStart(2,'0')}</span><span class="alert-msg ${type}">${msg}</span>`;
+  log.prepend(entry); while (log.children.length > 25) log.removeChild(log.lastChild);
+}
+function clearLog() { document.getElementById('alert-log').innerHTML = ''; logTime = 0; }
+
+// ===== VISUALIZERS =====
+const cs = document.getElementById('cubesatCanvas'); const cctx = cs.getContext('2d'); let stars3d = [];
+function drawCubeSat3D() {
+  const W = cs.parentElement.clientWidth, H = 260;
+  if (W === 0) return; if (cs.width !== W) { cs.width = W; cs.height = H; stars3d = Array.from({length: 60}, () => ({x: Math.random()*W, y: Math.random()*H, r: Math.random()*1.2})); }
+  
+  cctx.clearRect(0, 0, W, H); cctx.fillStyle = '#060810'; cctx.fillRect(0, 0, W, H);
+  
+  // Dynamic Thermal Glow
+  if (simState.thermalRunaway && simState.internalTemp > 30) {
+    const glowStr = Math.min(1.0, (simState.internalTemp - 30) / 30);
+    const tg = cctx.createRadialGradient(W/2, H/2, 10, W/2, H/2, 180);
+    tg.addColorStop(0, `rgba(255, 77, 109, ${glowStr * 0.4})`); tg.addColorStop(1, 'rgba(255, 77, 109, 0)');
+    cctx.fillStyle = tg; cctx.fillRect(0,0,W,H);
   }
 
-  // Update health bars
-  SUBSYSTEMS.forEach(sub => {
-    let health = 100;
-    if (sub.id === 'eps' && simState.inEclipse) health = Math.max(20, simState.battLevel);
-    if (sub.id === 'comms' && simState.antennaFail) health = 15;
-    if (sub.id === 'obc' && simState.obcReset) health = 50;
-    if (sub.id === 'adcs' && simState.tumbling) health = 40;
-    if (sub.id === 'thermal' && simState.thermalRunaway) health = Math.max(0, 100 - simState.frameCount * 0.3);
-
-    const el = document.getElementById('healthbar-' + sub.id);
-    const valEl = document.getElementById('health-' + sub.id);
-    if (el) {
-      el.style.width = health + '%';
-      el.style.background = health > 70 ? sub.color : health > 30 ? 'var(--warn)' : 'var(--red)';
-    }
-    if (valEl) valEl.textContent = Math.round(health) + '%';
-  });
-}
-
-function setText(id, val) {
-  const el = document.getElementById(id);
-  if (el) el.textContent = val;
-}
-
-// ===== CANVAS: 3D CUBESAT =====
-const cs = document.getElementById('cubesatCanvas');
-const cctx = cs.getContext('2d');
-
-let stars3d = [];
-function initStars3d(w, h) {
-  stars3d = [];
-  for (let i = 0; i < 100; i++) stars3d.push({ x: Math.random() * w, y: Math.random() * h, r: Math.random() });
-}
-
-function drawCubeSat3D() {
-  const W = cs.parentElement.clientWidth;
-  const H = 440;
-  if (cs.width !== W) { cs.width = W; cs.height = H; initStars3d(W, H); }
-  cctx.clearRect(0, 0, W, H);
-  cctx.fillStyle = '#060810';
-  cctx.fillRect(0, 0, W, H);
-
-  stars3d.forEach(s => {
-    cctx.beginPath();
-    cctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-    cctx.fillStyle = 'rgba(180,200,240,0.4)';
-    cctx.fill();
-  });
+  cctx.fillStyle = 'rgba(180,200,240,0.5)'; stars3d.forEach(s => { cctx.beginPath(); cctx.arc(s.x, s.y, s.r, 0, 6.28); cctx.fill(); });
 
   const cx = W / 2, cy = H / 2 + 10;
-  const angle = simState.animating ? simState.rotAngle : Math.PI / 6;
-  const scale = Math.min(W, H) * 0.0018;
+  // Dynamic Tumbling Jitter
+  let currentAngle = simState.animating ? simState.rotAngle : Math.PI / 6;
+  if (simState.tumbling) currentAngle += (Math.random() - 0.5) * 0.15;
 
-  // Isometric-ish projection
-  const cos = Math.cos(angle), sin = Math.sin(angle);
-  const tilt = 0.35;
+  const scale = Math.min(W, H) * 0.0025; 
+  const cos = Math.cos(currentAngle), sin = Math.sin(currentAngle), tilt = 0.35;
+  function project(x, y, z) { return { sx: cx + (x*cos - z*sin)*scale, sy: cy + (-y + (x*sin + z*cos)*tilt)*scale }; }
 
-  function project(x, y, z) {
-    const rx = x * cos - z * sin;
-    const rz = x * sin + z * cos;
-    return {
-      sx: cx + rx * scale,
-      sy: cy + (-y + rz * tilt) * scale
-    };
-  }
-
-  // 3U CubeSat: 10x10x34 (normalized: 1x1x3.4 × 50)
-  const W2 = 50, H2 = 170, D2 = 50;
-
-  const explodeOffset = simState.exploded ? 30 : 0;
-
-  // Layer colors for explode view
+  const W2 = 26, H2 = 72, D2 = 26; // Shrunk Geometry
+  const explodeOffset = simState.exploded ? 14 : 0;
   const layers = [
-    { name: 'EPS',     color: '#f59e0b', yOff: simState.exploded ? -explodeOffset * 3 : 0 },
-    { name: 'OBC',     color: '#a855f7', yOff: simState.exploded ? -explodeOffset * 1.5 : 0 },
-    { name: 'ADCS',    color: '#00d4aa', yOff: simState.exploded ? -explodeOffset * 0.5 : 0 },
-    { name: 'COMMS',   color: '#3b7eff', yOff: simState.exploded ? explodeOffset * 0.5 : 0 },
-    { name: 'PAYLOAD', color: '#ec4899', yOff: simState.exploded ? explodeOffset * 1.5 : 0 },
+    { name: 'EPS',     c: '#f59e0b', y: simState.exploded ? -explodeOffset*2 : 0 },
+    { name: 'OBC',     c: '#a855f7', y: simState.exploded ? -explodeOffset*1 : 0 },
+    { name: 'ADCS',    c: '#00d4aa', y: simState.exploded ? 0 : 0 },
+    { name: 'COMMS',   c: '#3b7eff', y: simState.exploded ? explodeOffset*1 : 0 },
+    { name: 'PAYLOAD', c: '#ec4899', y: simState.exploded ? explodeOffset*2 : 0 },
   ];
 
-  // Draw the main cubesat body faces
-  const corners = [
-    [-W2, -H2, -D2], [W2, -H2, -D2], [W2, -H2, D2], [-W2, -H2, D2],
-    [-W2,  H2, -D2], [W2,  H2, -D2], [W2,  H2, D2], [-W2,  H2, D2],
-  ];
-
-  const proj = corners.map(([x, y, z]) => project(x, y, z));
-
+  const corners = [[-W2,-H2,-D2],[W2,-H2,-D2],[W2,-H2,D2],[-W2,-H2,D2],[-W2,H2,-D2],[W2,H2,-D2],[W2,H2,D2],[-W2,H2,D2]];
+  const proj = corners.map(([x,y,z]) => project(x,y,z));
   const faces = [
-    { verts: [0,1,2,3], color: 'rgba(18,24,38,0.95)', label: 'TOP' },   // top
-    { verts: [4,5,6,7], color: 'rgba(14,18,30,0.95)', label: 'BOT' },   // bottom
-    { verts: [1,5,6,2], color: 'rgba(22,30,50,0.95)', label: '+X' },    // right
-    { verts: [0,4,7,3], color: 'rgba(16,22,36,0.95)', label: '-X' },    // left
-    { verts: [3,2,6,7], color: 'rgba(20,28,46,0.95)', label: '+Z' },    // front
-    { verts: [0,1,5,4], color: 'rgba(12,16,28,0.95)', label: '-Z' },    // back
+    { v: [0,1,2,3], c: '#121826', l: 'TOP' }, { v: [4,5,6,7], c: '#0e121e', l: 'BOT' },
+    { v: [1,5,6,2], c: '#161e32', l: '+X' }, { v: [0,4,7,3], c: '#101624', l: '-X' },
+    { v: [3,2,6,7], c: '#141c2e', l: '+Z' }, { v: [0,1,5,4], c: '#0c101c', l: '-Z' }
   ];
 
-  // Draw back faces first
-  const backFaces = [5, 1, 3];
-  backFaces.forEach(fi => {
-    const f = faces[fi];
-    const pts = f.verts.map(v => proj[v]);
-    cctx.beginPath();
-    pts.forEach((p, i) => i === 0 ? cctx.moveTo(p.sx, p.sy) : cctx.lineTo(p.sx, p.sy));
-    cctx.closePath();
-    cctx.fillStyle = f.color;
-    cctx.fill();
-    cctx.strokeStyle = 'rgba(50,70,110,0.6)';
-    cctx.lineWidth = 1;
-    cctx.stroke();
-  });
-
-  // Solar panels (left and right)
-  const panelW = 110, panelH = 14;
-  const panelY = 0;
+  [5, 1, 3].forEach(fi => drawFace(faces[fi], proj, 'rgba(50,70,110,0.4)'));
 
   function drawPanel(side) {
-    const xOff = side * (W2 + 12);
-    const pCorners = [
-      [xOff, panelY - panelH / 2, -panelW / 2],
-      [xOff, panelY - panelH / 2,  panelW / 2],
-      [xOff, panelY + panelH / 2,  panelW / 2],
-      [xOff, panelY + panelH / 2, -panelW / 2],
-    ].map(([x, y, z]) => project(x, y, z));
-
-    // Panel body
-    cctx.beginPath();
-    pCorners.forEach((p, i) => i === 0 ? cctx.moveTo(p.sx, p.sy) : cctx.lineTo(p.sx, p.sy));
-    cctx.closePath();
-
-    const panelGrad = cctx.createLinearGradient(pCorners[0].sx, pCorners[0].sy, pCorners[1].sx, pCorners[1].sy);
-    panelGrad.addColorStop(0, '#0d2a6e');
-    panelGrad.addColorStop(0.5, '#1a3d8f');
-    panelGrad.addColorStop(1, '#0d2a6e');
-    cctx.fillStyle = simState.inEclipse ? '#0a1530' : panelGrad;
-    cctx.fill();
-    cctx.strokeStyle = 'rgba(59,126,255,0.5)';
-    cctx.lineWidth = 1;
-    cctx.stroke();
-
-    // Cell lines
-    for (let i = 1; i < 4; i++) {
-      const t = i / 4;
-      const p0 = {
-        sx: pCorners[0].sx + (pCorners[1].sx - pCorners[0].sx) * t,
-        sy: pCorners[0].sy + (pCorners[1].sy - pCorners[0].sy) * t
-      };
-      const p1 = {
-        sx: pCorners[3].sx + (pCorners[2].sx - pCorners[3].sx) * t,
-        sy: pCorners[3].sy + (pCorners[2].sy - pCorners[3].sy) * t
-      };
-      cctx.beginPath();
-      cctx.moveTo(p0.sx, p0.sy);
-      cctx.lineTo(p1.sx, p1.sy);
-      cctx.strokeStyle = 'rgba(59,126,255,0.25)';
-      cctx.lineWidth = 0.8;
-      cctx.stroke();
-    }
+    const pW = 80, pH = 8, pY = 0;
+    const pC = [project(side*(W2+8), pY-pH/2, -pW/2), project(side*(W2+8), pY-pH/2, pW/2), project(side*(W2+8), pY+pH/2, pW/2), project(side*(W2+8), pY+pH/2, -pW/2)];
+    cctx.beginPath(); pC.forEach((p,i) => i?cctx.lineTo(p.sx,p.sy):cctx.moveTo(p.sx,p.sy)); cctx.closePath();
+    const g = cctx.createLinearGradient(pC[0].sx, pC[0].sy, pC[1].sx, pC[1].sy);
+    g.addColorStop(0, '#0d2a6e'); g.addColorStop(0.5, '#1a3d8f'); g.addColorStop(1, '#0d2a6e');
+    cctx.fillStyle = simState.inEclipse ? '#0a1530' : g;
+    cctx.fill(); cctx.strokeStyle = '#3b7eff80'; cctx.stroke();
   }
+  drawPanel(-1); drawPanel(1);
 
-  drawPanel(-1);
-  drawPanel(1);
-
-  // Draw subsystem layers (exploded)
   if (simState.exploded) {
-    layers.forEach((layer, i) => {
-      const yBase = -H2 + (i / layers.length) * H2 * 2;
-      const yTop = yBase + H2 * 2 / layers.length;
-      const yOff = layer.yOff;
-
-      const layerCorners = [
-        [-W2, yBase + yOff, -D2], [W2, yBase + yOff, -D2],
-        [W2, yBase + yOff, D2], [-W2, yBase + yOff, D2],
-        [-W2, yTop + yOff, -D2], [W2, yTop + yOff, -D2],
-        [W2, yTop + yOff, D2], [-W2, yTop + yOff, D2],
-      ].map(([x, y, z]) => project(x, y, z));
-
-      const layerFaces = [
-        [0,1,2,3], [4,5,6,7], [1,5,6,2], [3,2,6,7]
-      ];
-      layerFaces.forEach((verts, fi) => {
-        cctx.beginPath();
-        verts.forEach((v, idx) => idx === 0 ? cctx.moveTo(layerCorners[v].sx, layerCorners[v].sy) : cctx.lineTo(layerCorners[v].sx, layerCorners[v].sy));
-        cctx.closePath();
-        cctx.fillStyle = layer.color + (fi === 0 ? '30' : fi === 1 ? '50' : fi === 2 ? '40' : '35');
-        cctx.fill();
-        cctx.strokeStyle = layer.color + '80';
-        cctx.lineWidth = 1;
-        cctx.stroke();
+    layers.forEach((lyr, i) => {
+      const yB = -H2 + (i/layers.length)*H2*2, yT = yB + H2*2/layers.length;
+      const lC = [[-W2,yB+lyr.y,-D2],[W2,yB+lyr.y,-D2],[W2,yB+lyr.y,D2],[-W2,yB+lyr.y,D2],[-W2,yT+lyr.y,-D2],[W2,yT+lyr.y,-D2],[W2,yT+lyr.y,D2],[-W2,yT+lyr.y,D2]].map(([x,y,z])=>project(x,y,z));
+      [[0,1,2,3],[4,5,6,7],[1,5,6,2],[3,2,6,7]].forEach(verts => {
+        cctx.beginPath(); verts.forEach((v,id) => id?cctx.lineTo(lC[v].sx,lC[v].sy):cctx.moveTo(lC[v].sx,lC[v].sy)); cctx.closePath();
+        cctx.fillStyle = lyr.c + '40'; cctx.fill(); cctx.strokeStyle = lyr.c + 'aa'; cctx.stroke();
       });
-
-      // Layer label
-      const labelPt = project(W2 + 15, (yBase + yTop) / 2 + yOff, D2);
-      cctx.fillStyle = layer.color;
-      cctx.font = "bold 10px 'Space Mono'";
-      cctx.textAlign = 'left';
-      cctx.fillText(layer.name, labelPt.sx, labelPt.sy + 4);
+      const lbl = project(W2+10, (yB+yT)/2+lyr.y, D2);
+      cctx.fillStyle = lyr.c; cctx.font = "bold 9px 'Space Mono'"; cctx.fillText(lyr.name, lbl.sx, lbl.sy);
     });
   }
 
-  // Draw front faces
-  const frontFaces = [0, 2, 4];
-  frontFaces.forEach(fi => {
-    const f = faces[fi];
-    const pts = f.verts.map(v => proj[v]);
-    cctx.beginPath();
-    pts.forEach((p, i) => i === 0 ? cctx.moveTo(p.sx, p.sy) : cctx.lineTo(p.sx, p.sy));
-    cctx.closePath();
-    cctx.fillStyle = f.color;
-    cctx.fill();
-    cctx.strokeStyle = 'rgba(60,80,120,0.8)';
-    cctx.lineWidth = 1;
-    cctx.stroke();
-  });
+  [0, 2, 4].forEach(fi => drawFace(faces[fi], proj, 'rgba(60,80,120,0.6)'));
 
-  // Highlighted subsystem face glow
-  const activeSub = SUBSYSTEMS.find(x => x.id === simState.activeSubsys);
-  if (activeSub) {
-    const glowFace = faces[4].verts.map(v => proj[v]);
-    cctx.beginPath();
-    glowFace.forEach((p, i) => i === 0 ? cctx.moveTo(p.sx, p.sy) : cctx.lineTo(p.sx, p.sy));
-    cctx.closePath();
-    cctx.strokeStyle = activeSub.color;
-    cctx.lineWidth = 2;
-    cctx.stroke();
+  function drawFace(f, prj, stroke) {
+    cctx.beginPath(); f.v.forEach((v,i) => i?cctx.lineTo(prj[v].sx,prj[v].sy):cctx.moveTo(prj[v].sx,prj[v].sy));
+    cctx.closePath(); cctx.fillStyle = f.c; cctx.fill(); cctx.strokeStyle = stroke; cctx.stroke();
   }
 
-  // Antenna (top)
-  const antBase = project(0, -H2 - 5, 0);
-  const antTip = project(0, -H2 - 50, 0);
-  cctx.strokeStyle = simState.antennaFail ? 'var(--red)' : 'rgba(100,140,200,0.7)';
-  cctx.lineWidth = 2;
-  cctx.beginPath();
-  cctx.moveTo(antBase.sx, antBase.sy);
-  cctx.lineTo(antTip.sx, antTip.sy);
-  cctx.stroke();
-  // Dish
-  cctx.strokeStyle = simState.antennaFail ? 'rgba(255,77,109,0.5)' : 'rgba(100,140,200,0.5)';
-  cctx.lineWidth = 1;
-  cctx.beginPath();
-  cctx.arc(antTip.sx, antTip.sy, 12, 0.2, Math.PI - 0.2);
-  cctx.stroke();
-
-  // Subsystem indicators (small colored dots on face)
-  SUBSYSTEMS.slice(0, 4).forEach((sub, i) => {
-    const dotY = -H2 + 30 + i * 80;
-    const dotPt = project(W2 - 5, dotY, D2);
-    cctx.beginPath();
-    cctx.arc(dotPt.sx, dotPt.sy, 4, 0, Math.PI * 2);
-    const isHealthy = !((sub.id === 'eps' && simState.inEclipse) || (sub.id === 'comms' && simState.antennaFail) || (sub.id === 'adcs' && simState.tumbling) || (sub.id === 'thermal' && simState.thermalRunaway));
-    cctx.fillStyle = isHealthy ? sub.color : 'var(--red)';
-    cctx.fill();
-  });
-
-  // Telemetry label
-  if (!simState.exploded) {
-    cctx.fillStyle = 'rgba(100,120,160,0.6)';
-    cctx.font = "10px 'Space Mono'";
-    cctx.textAlign = 'center';
-    cctx.fillText('3U CubeSat — 10×10×34cm — ' + SUBSYSTEMS.reduce((a, s) => a + s.mass, 0) + 'g', cx, H - 16);
+  const sub = SUBSYSTEMS.find(x => x.id === simState.activeSubsys);
+  if (sub && !simState.exploded) {
+    const gf = faces[4].v.map(v=>proj[v]);
+    cctx.beginPath(); gf.forEach((p,i)=>i?cctx.lineTo(p.sx,p.sy):cctx.moveTo(p.sx,p.sy)); cctx.closePath();
+    cctx.strokeStyle = sub.color; cctx.lineWidth = 2; cctx.stroke(); cctx.lineWidth = 1;
   }
+
+  // Antenna
+  const ab = project(0, -H2-2, 0), at = project(0, -H2-22, 0);
+  cctx.strokeStyle = simState.antennaFail ? '#ff4d6d' : '#648cc8'; cctx.lineWidth = 2;
+  cctx.beginPath(); cctx.moveTo(ab.sx, ab.sy); cctx.lineTo(at.sx, at.sy); cctx.stroke(); cctx.lineWidth = 1;
 }
-
-// ===== POWER FLOW CANVAS =====
-const pc = document.getElementById('powerCanvas');
-const pctx = pc.getContext('2d');
 
 function drawPowerFlow() {
-  const W = pc.parentElement.clientWidth, H = 440;
+  const pc = document.getElementById('powerCanvas'); const ctx = pc.getContext('2d');
+  const W = pc.parentElement.clientWidth, H = 260; if (W === 0) return;
   if (pc.width !== W) { pc.width = W; pc.height = H; }
-  pctx.clearRect(0, 0, W, H);
-  pctx.fillStyle = '#060810';
-  pctx.fillRect(0, 0, W, H);
+  ctx.clearRect(0, 0, W, H); ctx.fillStyle = '#060810'; ctx.fillRect(0, 0, W, H);
 
-  const cx = W / 2;
+  const cx = W/2, sy = 40;
   const nodes = {
-    solar: { x: cx - 220, y: 120, label: 'Solar Panels', sub: `${(1361 * (simState.params.solar_area || 0.03) * (simState.params.solar_eff || 26) / 100).toFixed(1)}W` },
-    batt:  { x: cx - 220, y: 320, label: 'Battery Pack', sub: `${simState.battLevel.toFixed(0)}% • 20Wh` },
-    eps:   { x: cx, y: 220, label: 'EPS / PCU', sub: '3.3V / 5V Bus' },
-    obc:   { x: cx + 180, y: 120, label: 'OBC', sub: `${SUBSYSTEMS.find(x=>x.id==='obc').basePower}W` },
-    comms: { x: cx + 180, y: 200, label: 'COMMS', sub: `${simState.params.tx_power || 0.6}W tx` },
-    adcs:  { x: cx + 180, y: 280, label: 'ADCS', sub: '0.5W' },
-    pay:   { x: cx + 180, y: 360, label: 'Payload', sub: `${((simState.params.payload_pwr || 1.5) * (simState.params.duty_cycle || 20) / 100).toFixed(2)}W avg` },
+    solar: {x:cx-120, y:sy, l:'Solar Array', s:simState.inEclipse?'0W':`${(1361*simState.params.solar_area*0.26).toFixed(1)}W`},
+    batt:  {x:cx-120, y:sy+130, l:'Battery', s:`${simState.battLevel.toFixed(0)}%`},
+    eps:   {x:cx, y:sy+65, l:'EPS PCU', s:'Bus'},
+    obc:   {x:cx+120, y:sy-20, l:'OBC', s:''},
+    comms: {x:cx+120, y:sy+35, l:'COMMS', s:''},
+    adcs:  {x:cx+120, y:sy+90, l:'ADCS', s:''},
+    pay:   {x:cx+120, y:sy+145, l:'PAYLOAD', s:''}
   };
 
-  // Draw connections
-  const connections = [
-    { from: 'solar', to: 'eps', color: simState.inEclipse ? '#333' : '#f59e0b', label: simState.inEclipse ? '0W (eclipse)' : null },
-    { from: 'batt', to: 'eps', color: simState.inEclipse ? '#22c55e' : '#f59e0b50', label: simState.inEclipse ? 'discharging' : null },
-    { from: 'eps', to: 'obc', color: '#a855f730' },
-    { from: 'eps', to: 'comms', color: '#3b7eff30' },
-    { from: 'eps', to: 'adcs', color: '#00d4aa30' },
-    { from: 'eps', to: 'pay', color: '#ec489930' },
-  ];
-
-  connections.forEach(c => {
-    const a = nodes[c.from], b = nodes[c.to];
-    const animated = c.label || Math.random() > 0.97;
-
-    // Draw line
-    pctx.beginPath();
-    pctx.moveTo(a.x + 60, a.y);
-    pctx.bezierCurveTo(a.x + 100, a.y, b.x - 40, b.y, b.x - 60, b.y);
-    pctx.strokeStyle = c.color;
-    pctx.lineWidth = 2;
-    pctx.stroke();
-
-    // Animate flow dots
-    const t = (simState.frameCount % 60) / 60;
-    const bx = cubeBezier(a.x + 60, a.x + 100, b.x - 40, b.x - 60, t);
-    const by = cubeBezier(a.y, a.y, b.y, b.y, t);
-    pctx.beginPath();
-    pctx.arc(bx, by, 3, 0, Math.PI * 2);
-    pctx.fillStyle = c.color.replace('30', 'ff') || c.color;
-    pctx.fill();
+  [{f:'solar',t:'eps',c:simState.inEclipse?'#333':'#f59e0b'},{f:'batt',t:'eps',c:simState.inEclipse?'#22c55e':'#f59e0b50'},
+   {f:'eps',t:'obc',c:'#a855f7'},{f:'eps',t:'comms',c:'#3b7eff'},{f:'eps',t:'adcs',c:'#00d4aa'},{f:'eps',t:'pay',c:'#ec4899'}].forEach(lk => {
+    const a = nodes[lk.f], b = nodes[lk.t];
+    ctx.beginPath(); ctx.moveTo(a.x+45, a.y); ctx.bezierCurveTo(a.x+80, a.y, b.x-30, b.y, b.x-45, b.y);
+    ctx.strokeStyle = lk.c + '50'; ctx.lineWidth = 2; ctx.stroke();
+    const speed = lk.f === 'solar' && simState.inEclipse ? 0 : 60;
+    if(speed > 0) {
+      const t = (simState.frameCount % speed) / speed;
+      const bx = Math.pow(1-t,3)*(a.x+45) + 3*Math.pow(1-t,2)*t*(a.x+80) + 3*(1-t)*t*t*(b.x-30) + Math.pow(t,3)*(b.x-45);
+      const by = Math.pow(1-t,3)*a.y + 3*Math.pow(1-t,2)*t*a.y + 3*(1-t)*t*t*b.y + Math.pow(t,3)*b.y;
+      ctx.beginPath(); ctx.arc(bx, by, 4, 0, 6.28); ctx.fillStyle = lk.c; ctx.fill();
+    }
   });
 
-  // Draw nodes
-  Object.entries(nodes).forEach(([key, n]) => {
-    const sub = SUBSYSTEMS.find(s => s.id === key);
-    const color = sub ? sub.color : '#f59e0b';
-    pctx.fillStyle = 'rgba(12,15,24,0.95)';
-    pctx.strokeStyle = color + '90';
-    pctx.lineWidth = 1.5;
-    roundRect(pctx, n.x - 60, n.y - 22, 120, 44, 6);
-    pctx.fill();
-    pctx.stroke();
+  Object.entries(nodes).forEach(([k,n]) => {
+    const c = SUBSYSTEMS.find(x=>x.id===k)?.color || '#f59e0b';
+    let strokeColor = c + '90';
+    if (k==='comms' && simState.antennaFail) strokeColor = '#ff4d6d';
+    if (k==='adcs' && simState.tumbling) strokeColor = '#ff4d6d';
+    if (k==='thermal' && simState.thermalRunaway) strokeColor = '#ff4d6d';
+    if (k==='obc' && simState.obcReset) strokeColor = '#f59e0b';
 
-    pctx.fillStyle = color;
-    pctx.font = "bold 11px 'Outfit', sans-serif";
-    pctx.textAlign = 'center';
-    pctx.fillText(n.label, n.x, n.y - 3);
-    pctx.fillStyle = 'rgba(100,120,160,0.8)';
-    pctx.font = "9px 'Space Mono'";
-    pctx.fillText(n.sub, n.x, n.y + 12);
+    ctx.fillStyle = '#0c0f18'; ctx.strokeStyle = strokeColor; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.roundRect(n.x-45, n.y-20, 90, 40, 6); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = c; ctx.font = "bold 10px 'Outfit'"; ctx.textAlign = 'center'; ctx.fillText(n.l, n.x, n.y-2);
+    ctx.fillStyle = '#6478a0'; ctx.font = "9px 'Space Mono'"; ctx.fillText(n.s, n.x, n.y+12);
   });
 }
-
-function cubeBezier(p0, p1, p2, p3, t) {
-  return Math.pow(1-t,3)*p0 + 3*Math.pow(1-t,2)*t*p1 + 3*(1-t)*t*t*p2 + Math.pow(t,3)*p3;
-}
-function roundRect(ctx, x, y, w, h, r) {
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.lineTo(x + w - r, y); ctx.arcTo(x+w, y, x+w, y+r, r);
-  ctx.lineTo(x + w, y + h - r); ctx.arcTo(x+w, y+h, x+w-r, y+h, r);
-  ctx.lineTo(x + r, y + h); ctx.arcTo(x, y+h, x, y+h-r, r);
-  ctx.lineTo(x, y + r); ctx.arcTo(x, y, x+r, y, r);
-  ctx.closePath();
-}
-
-// ===== COMMS LINK CANVAS =====
-const cc = document.getElementById('commsCanvas');
-const cctx2 = cc.getContext('2d');
 
 function drawCommsLink() {
-  const W = cc.parentElement.clientWidth, H = 440;
+  const cc = document.getElementById('commsCanvas'); const ctx = cc.getContext('2d');
+  const W = cc.parentElement.clientWidth, H = 260; if (W === 0) return;
   if (cc.width !== W) { cc.width = W; cc.height = H; }
-  cctx2.clearRect(0, 0, W, H);
-  cctx2.fillStyle = '#060810';
-  cctx2.fillRect(0, 0, W, H);
+  ctx.clearRect(0,0,W,H); ctx.fillStyle = '#060810'; ctx.fillRect(0,0,W,H);
 
-  // Draw Earth
-  const earthX = 140, earthY = H - 100, earthR = 70;
-  const earthGrad = cctx2.createRadialGradient(earthX - 20, earthY - 20, 10, earthX, earthY, earthR);
-  earthGrad.addColorStop(0, '#3a90e8'); earthGrad.addColorStop(1, '#0f3d82');
-  cctx2.beginPath(); cctx2.arc(earthX, earthY, earthR, 0, Math.PI * 2);
-  cctx2.fillStyle = earthGrad; cctx2.fill();
-  cctx2.beginPath(); cctx2.arc(earthX, earthY, earthR + 4, 0, Math.PI * 2);
-  cctx2.strokeStyle = 'rgba(100,180,255,0.2)'; cctx2.lineWidth = 3; cctx2.stroke();
-
-  // Ground station antenna
-  const gsX = earthX + 30, gsY = earthY - earthR - 5;
-  cctx2.strokeStyle = 'rgba(0,212,170,0.7)'; cctx2.lineWidth = 2;
-  cctx2.beginPath(); cctx2.moveTo(gsX, gsY); cctx2.lineTo(gsX, gsY - 25); cctx2.stroke();
-  cctx2.beginPath(); cctx2.arc(gsX, gsY - 28, 8, 0.3, Math.PI - 0.3);
-  cctx2.strokeStyle = 'rgba(0,212,170,0.5)'; cctx2.lineWidth = 1.5; cctx2.stroke();
-  cctx2.fillStyle = 'rgba(0,212,170,0.6)'; cctx2.font = "9px 'Space Mono'"; cctx2.textAlign = 'center';
-  cctx2.fillText('GND STA', gsX, gsY + 15);
-
-  // Satellite position
-  const satX = W - 120, satY = 100;
-  // Satellite body (simple)
-  cctx2.fillStyle = '#1e2a3a'; cctx2.strokeStyle = '#3a5272'; cctx2.lineWidth = 1.5;
-  cctx2.beginPath(); cctx2.roundRect(satX - 15, satY - 20, 30, 40, 3); cctx2.fill(); cctx2.stroke();
-  cctx2.fillStyle = '#1a3d8f';
-  cctx2.fillRect(satX - 40, satY - 7, 22, 14);
-  cctx2.fillRect(satX + 18, satY - 7, 22, 14);
-  cctx2.strokeStyle = 'rgba(59,126,255,0.4)'; cctx2.lineWidth = 1;
-  cctx2.strokeRect(satX - 40, satY - 7, 22, 14);
-  cctx2.strokeRect(satX + 18, satY - 7, 22, 14);
-  // Antenna
-  cctx2.strokeStyle = 'rgba(0,212,170,0.7)'; cctx2.lineWidth = 1.5;
-  cctx2.beginPath(); cctx2.moveTo(satX, satY - 20); cctx2.lineTo(satX, satY - 42); cctx2.stroke();
-  cctx2.fillStyle = 'rgba(100,160,220,0.6)'; cctx2.font = "9px 'Space Mono'"; cctx2.textAlign = 'center';
-  cctx2.fillText('3U CubeSat', satX, satY + 38);
-  cctx2.fillText('~500 km', satX, satY + 50);
-
-  // Orbit arc
-  cctx2.beginPath(); cctx2.arc(earthX, earthY, 310, -Math.PI * 0.7, -Math.PI * 0.05);
-  cctx2.strokeStyle = 'rgba(59,126,255,0.15)'; cctx2.lineWidth = 1; cctx2.setLineDash([4, 6]); cctx2.stroke();
-  cctx2.setLineDash([]);
-
-  // Link line
+  const earthX = 100, earthY = H - 50, earthR = 50;
+  ctx.beginPath(); ctx.arc(earthX, earthY, earthR, 0, 6.28); ctx.fillStyle = '#103060'; ctx.fill();
+  const gsX = earthX + 20, gsY = earthY - earthR - 5;
+  ctx.strokeStyle = '#00d4aa'; ctx.beginPath(); ctx.moveTo(gsX,gsY); ctx.lineTo(gsX,gsY-20); ctx.stroke();
+  
+  const satX = W - 100, satY = 50;
+  ctx.fillStyle = '#1e2a3a'; ctx.fillRect(satX-12, satY-15, 24, 30);
+  ctx.strokeStyle = simState.antennaFail ? '#ff4d6d' : '#00d4aa'; 
+  ctx.beginPath(); ctx.moveTo(satX,satY-15); ctx.lineTo(satX,satY-35); ctx.stroke();
+  
   const linkOK = !simState.antennaFail;
-  const linkColor = linkOK ? 'rgba(0,212,170,0.6)' : 'rgba(255,77,109,0.6)';
-  cctx2.beginPath();
-  cctx2.moveTo(gsX, gsY - 25);
-  cctx2.lineTo(satX, satY);
-  cctx2.strokeStyle = linkColor; cctx2.lineWidth = 1.5;
-  cctx2.setLineDash(linkOK ? [] : [5, 5]); cctx2.stroke(); cctx2.setLineDash([]);
-
-  // Animated signal pulses
-  if (linkOK) {
-    for (let i = 0; i < 3; i++) {
-      const t = ((simState.frameCount + i * 20) % 60) / 60;
-      const px = gsX + (satX - gsX) * t;
-      const py = (gsY - 25) + (satY - (gsY - 25)) * t;
-      cctx2.beginPath(); cctx2.arc(px, py, 3, 0, Math.PI * 2);
-      cctx2.fillStyle = 'rgba(0,212,170,0.8)'; cctx2.fill();
-    }
+  const waveT = (simState.frameCount % 90) / 90;
+  ctx.lineWidth = 2;
+  for (let i = 0; i < 4; i++) {
+     const wt = (waveT + i*0.25) % 1;
+     const wx = satX - wt * (satX - gsX); const wy = (satY-10) - wt * ((satY-10) - (gsY-20));
+     ctx.beginPath(); ctx.arc(wx, wy, 2 + wt*12, 0, Math.PI*2);
+     ctx.strokeStyle = linkOK ? `rgba(59, 126, 255, ${1 - wt})` : `rgba(255, 77, 109, ${1 - wt})`; ctx.stroke();
   }
+  ctx.lineWidth = 1;
+  
+  const tx_dBm = 10 * Math.log10(simState.params.tx_power * 1000);
+  const antennaGain = simState.antennaFail ? -15 : 2;
+  const margin = (tx_dBm + (-139.2) + antennaGain + 12 - (-115)).toFixed(1);
 
-  // Link budget panel
-  const lbX = W / 2 - 90, lbY = H / 2 - 80;
-  cctx2.fillStyle = 'rgba(12,15,24,0.9)';
-  cctx2.strokeStyle = 'rgba(59,126,255,0.4)'; cctx2.lineWidth = 1;
-  roundRect(cctx2, lbX, lbY, 200, 160, 8);
-  cctx2.fill(); cctx2.stroke();
-
-  cctx2.fillStyle = 'rgba(59,126,255,0.8)'; cctx2.font = "bold 10px 'Space Mono'";
-  cctx2.textAlign = 'left'; cctx2.fillText('// LINK BUDGET', lbX + 12, lbY + 20);
-
-  const budget = [
-    ['TX Power', `${(10 * Math.log10((simState.params.tx_power || 0.6) * 1000)).toFixed(1)} dBm`],
-    ['Path Loss', '−147 dB (500km)'],
-    ['RX Gain', '+5.0 dBi'],
-    ['Free Space', simState.antennaFail ? 'NO LINK' : `+${(10 * Math.log10((simState.params.tx_power || 0.6) * 1000) - 147 + 82 + 5).toFixed(1)} dB margin`],
-  ];
-
-  budget.forEach(([key, val], i) => {
-    cctx2.fillStyle = 'rgba(100,120,160,0.7)'; cctx2.font = "9px 'Space Mono'"; cctx2.textAlign = 'left';
-    cctx2.fillText(key, lbX + 12, lbY + 45 + i * 26);
-    cctx2.fillStyle = simState.antennaFail && key === 'Free Space' ? 'var(--red)' : 'rgba(200,220,255,0.9)';
-    cctx2.textAlign = 'right';
-    cctx2.fillText(val, lbX + 188, lbY + 45 + i * 26);
+  const lX = W/2 - 90, lY = H/2 - 60; // Shifted Left and widened to fit text
+  ctx.fillStyle = '#0c0f18'; ctx.strokeStyle = '#3b7eff60'; ctx.beginPath(); ctx.roundRect(lX,lY, 180, 110, 6); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#3b7eff'; ctx.font = "bold 10px 'Space Mono'"; ctx.textAlign = 'left'; ctx.fillText('UHF BUDGET 437MHz', lX+10, lY+18);
+  
+  // Simplified terminology and enforced clean layout
+  [['Transmit Power', `${tx_dBm.toFixed(1)} dBm`], ['Signal Loss', `-139.2 dB`], ['Antenna Gain', `${antennaGain + 12} dBi`], ['Receiver Limit', `-115 dBm`], ['Link Margin', `${margin} dB`]].forEach(([k,v], i) => {
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#6478a0'; ctx.fillText(k, lX+10, lY+40+i*14);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = (i===4 && margin<5) ? '#ff4d6d' : '#c8d4e8'; ctx.fillText(v, lX+170, lY+40+i*14);
   });
-
-  // Elevation arc visualization
-  const elevAngle = (simState.params.gs_elev || 10);
-  const arcR = 50;
-  cctx2.strokeStyle = 'rgba(0,212,170,0.2)'; cctx2.lineWidth = 1;
-  for (let el = 10; el <= 80; el += 20) {
-    cctx2.beginPath();
-    cctx2.arc(earthX, earthY, earthR + arcR * (el / 80), -Math.PI, 0);
-    cctx2.stroke();
-  }
-
-  // Elevation label
-  cctx2.fillStyle = 'rgba(0,212,170,0.6)'; cctx2.font = "9px 'Space Mono'";
-  cctx2.textAlign = 'center';
-  cctx2.fillText(`Min elev: ${elevAngle}°`, earthX, earthY - earthR - 65);
+  ctx.textAlign = 'left'; // Reset
 }
 
-// ===== SIMULATION LOOP =====
-function simLoop() {
-  simState.frameCount++;
-  simState.uptime += 1 / 60;
-
-  // Battery drain/charge simulation
-  if (simState.inEclipse) {
-    simState.battLevel = Math.max(5, simState.battLevel - 0.02);
+// ===== MISSION CONTROL LOOP =====
+function toggleScenarioArm(id) {
+  if (simState.missionActive) return;
+  if (simState.armedScenarios.includes(id)) {
+    simState.armedScenarios = simState.armedScenarios.filter(x => x !== id);
   } else {
-    simState.battLevel = Math.min(100, simState.battLevel + 0.005);
+    simState.armedScenarios.push(id);
+  }
+  buildScenarios();
+}
+
+function beginMission() {
+  if (simState.totalDynPwr > POWER_LIMIT) {
+    addLog('error', `MISSION ABORT: Total power ${simState.totalDynPwr.toFixed(1)}W exceeds limit.`);
+    return;
+  }
+  
+  simState.missionActive = true;
+  simState.missionTimer = 0;
+  
+  // Lock UI
+  document.getElementById('right-col').classList.add('locked');
+  document.getElementById('detail-content').classList.add('locked');
+  
+  addLog('info', '--- MISSION SEQUENCE INITIATED ---');
+  
+  // Trigger armed scenarios
+  simState.armedScenarios.forEach(id => {
+    const sc = SCENARIOS.find(x => x.id === id);
+    if (sc) { sc.effect(); addLog('warn', `FAULT INJECT: ${sc.name} triggered.`); }
+  });
+  
+  if (simState.armedScenarios.length === 0) {
+    addLog('info', 'No faults injected. Testing nominal baseline.');
+  }
+}
+
+function endMission(success, reason) {
+  simState.missionActive = false;
+  const m = document.getElementById('mission-modal');
+  m.style.display = 'flex';
+  
+  const title = document.getElementById('modal-title');
+  title.textContent = success ? "MISSION SUCCESS" : "CRITICAL FAILURE";
+  title.style.color = success ? "var(--accent)" : "var(--red)";
+  
+  document.getElementById('modal-reason').textContent = reason;
+  document.getElementById('modal-time').textContent = `Time Survived: ${simState.missionTimer.toFixed(1)}s / ${MISSION_DURATION.toFixed(1)}s`;
+}
+
+function resetMission() {
+  document.getElementById('mission-modal').style.display = 'none';
+  
+  // Unlock UI
+  document.getElementById('right-col').classList.remove('locked');
+  document.getElementById('detail-content').classList.remove('locked');
+  
+  // Reset physics
+  simState.missionActive = false;
+  simState.inEclipse = false; simState.tumbling = false; simState.antennaFail = false; 
+  simState.thermalRunaway = false; simState.obcReset = false;
+  simState.internalTemp = 18.0; simState.battLevel = 87; simState.missionTimer = 0;
+  simState.armedScenarios = [];
+  
+  document.getElementById('mission-timer').textContent = `T+ 00.0s`;
+  
+  SUBSYSTEMS.forEach(s => updateSubsysDataStatus(s.id, 'nominal'));
+  buildScenarios();
+  buildDetailPanel(simState.activeSubsys);
+  
+  addLog('info', 'System reset to nominal defaults.');
+}
+
+function simLoop() {
+  simState.frameCount++; simState.uptime += 1/60;
+
+  // Real-time Physics integration
+  if (simState.inEclipse) {
+    simState.battLevel = Math.max(0, simState.battLevel - 0.05); // Faster drain for realism
+  } else {
+    simState.battLevel = Math.min(100, simState.battLevel + 0.01);
   }
 
-  // Thermal runaway
   if (simState.thermalRunaway) {
-    simState.internalTemp = Math.min(80, simState.internalTemp + 0.05);
-    if (simState.internalTemp > 60 && !simState._thermalWarn) {
-      simState._thermalWarn = true;
-      addLog('error', 'THERMAL: Internal temp exceeds battery limit (60°C)!');
-    }
+    // Thermal escalates towards failure point rapidly
+    simState.internalTemp += 0.04;
+  } else if (!simState.inEclipse) {
+     simState.internalTemp = 18.0; // Baseline
   }
 
-  // OBC reset flicker
-  if (simState.obcReset) {
-    setTimeout(() => {
-      simState.obcReset = false;
-      addLog('info', 'OBC: Watchdog reset complete. System rebooted.');
-      simState.obcResets++;
-    }, 3000);
+  // Handle transient events
+  if (simState.obcReset) { 
+    setTimeout(() => { if(simState.obcReset) { simState.obcReset = false; simState.obcResets++; addLog('info', 'OBC: Watchdog rebooted successfully.'); updateSubsysDataStatus('obc', 'nominal'); } }, 2000); 
+  }
+  if (simState.tumbling && simState.frameCount % 180 === 0 && simState.frameCount > 400) { 
+    simState.tumbling = false; addLog('info', 'ADCS: Detumble complete.'); updateSubsysDataStatus('adcs', 'nominal'); 
   }
 
-  // Gradually reduce tumbling
-  if (simState.tumbling && simState.frameCount % 180 === 0) {
-    addLog('info', 'ADCS: B-dot control reducing angular rate...');
-    if (simState.frameCount > 600) {
-      simState.tumbling = false;
-      addLog('info', 'ADCS: Detumble complete. Transitioning to fine pointing.');
-      updateSubsysStatus('adcs', 'nominal');
-    }
-  }
-
-  // Update status bar
-  document.getElementById('s-power').textContent = simState.totalPower.toFixed(1) + 'W';
+  // Update Readouts
+  document.getElementById('s-power').textContent = simState.totalDynPwr.toFixed(1) + 'W';
   document.getElementById('s-batt').textContent = simState.battLevel.toFixed(0) + '%';
-  document.getElementById('s-batt').style.color = simState.battLevel < 20 ? 'var(--red)' : simState.battLevel < 50 ? 'var(--warn)' : 'var(--accent)';
-  document.getElementById('s-temp').textContent = simState.internalTemp.toFixed(0) + '°C';
+  document.getElementById('s-temp').textContent = simState.internalTemp.toFixed(1) + '°C';
+  
+  let globalAlert = '';
+  if (simState.battLevel < 20) globalAlert = '⚠ LOW BATT';
+  if (simState.internalTemp > 50) globalAlert = '⚠ HIGH TEMP';
+  document.getElementById('s-alert').textContent = globalAlert;
 
-  // Alert check
-  if (simState.battLevel < 20 && !simState._lowBattWarn) {
-    simState._lowBattWarn = true;
-    document.getElementById('s-alert').textContent = '⚠ LOW BATTERY';
-    addLog('warn', 'EPS: Battery below 20%. Load shedding recommended.');
+  // MISSION LOOP
+  if (simState.missionActive) {
+    simState.missionTimer += 1/60;
+    document.getElementById('mission-timer').textContent = `T+ ${simState.missionTimer.toFixed(1)}s`;
+    
+    // Check Failure Conditions
+    if (simState.internalTemp >= TEMP_CRITICAL) {
+      endMission(false, "Thermal limits exceeded. Primary avionics destroyed by heat soak.");
+    } else if (simState.battLevel <= 0) {
+      endMission(false, "Total power loss. Battery completely depleted during eclipse.");
+    } else if (simState.missionTimer >= MISSION_DURATION) {
+      endMission(true, "CubeSat successfully survived the operational window within constraints.");
+    }
   }
 
-  // Draw active canvas
+  // Rendering
   if (simState.activeTab === 'structure') {
     if (simState.animating) simState.rotAngle += 0.008;
     drawCubeSat3D();
-  } else if (simState.activeTab === 'power') {
-    drawPowerFlow();
-  } else if (simState.activeTab === 'comms') {
-    drawCommsLink();
-  }
+  } else if (simState.activeTab === 'power') drawPowerFlow();
+  else if (simState.activeTab === 'comms') drawCommsLink();
 
-  updateMetrics();
+  updateMetrics(); 
   requestAnimationFrame(simLoop);
 }
 
-// ===== SCENARIO TRIGGERS =====
-function triggerScenario(id) {
-  if (simState.activeScenario === id) { clearScenario(); return; }
-  simState.activeScenario = id;
-  buildScenarios();
-  const sc = SCENARIOS.find(x => x.id === id);
-  if (sc) { sc.effect(); addLog('warn', `SCENARIO: "${sc.name}" triggered.`); }
-}
-
-function triggerEclipse() {
-  simState.inEclipse = true;
-  simState._lowBattWarn = false;
-  addLog('warn', 'EPS: Eclipse entry detected. Solar generation = 0W. Battery discharging.');
-  updateSubsysStatus('eps', 'warning');
-}
-function triggerBitFlip() {
-  simState.obcReset = true;
-  addLog('error', 'OBC: Single Event Upset detected! Watchdog timer triggered.');
-  addLog('warn', 'OBC: System reset in progress...');
-  updateSubsysStatus('obc', 'reset');
-}
-function triggerTumble() {
-  simState.tumbling = true;
-  simState.frameCount = 0;
-  addLog('error', 'ADCS: High angular rates detected post-deployment!');
-  addLog('info', 'ADCS: Initiating B-dot detumble algorithm via magnetorquers.');
-  updateSubsysStatus('adcs', 'detumble');
-}
-function triggerAntennaFail() {
-  simState.antennaFail = true;
-  addLog('error', 'COMMS: Antenna deployment failure! Link margin critically low.');
-  addLog('warn', 'COMMS: Attempting alternate comm mode. Data rate reduced.');
-  updateSubsysStatus('comms', 'fault');
-}
-function triggerThermal() {
-  simState.thermalRunaway = true;
-  simState.internalTemp = 18;
-  simState._thermalWarn = false;
-  addLog('error', 'THERMAL: Heater stuck ON detected. Temperature rising.');
-  updateSubsysStatus('thermal', 'critical');
-}
-
-function clearScenario() {
-  simState.activeScenario = null;
-  simState.inEclipse = false;
-  simState.tumbling = false;
-  simState.antennaFail = false;
-  simState.thermalRunaway = false;
-  simState.obcReset = false;
-  simState.internalTemp = 18;
-  simState.battLevel = 87;
-  simState._lowBattWarn = false;
-  simState._thermalWarn = false;
-  document.getElementById('s-alert').textContent = '';
-  SUBSYSTEMS.forEach(s => updateSubsysStatus(s.id, 'nominal'));
-  buildScenarios();
-  addLog('info', 'All systems restored to nominal.');
-}
-
-function updateSubsysStatus(id, status) {
-  const el = document.getElementById('subsys-status-' + id);
-  if (el) {
-    const colors = { nominal: 'var(--accent)', warning: 'var(--warn)', fault: 'var(--red)', critical: 'var(--red)', reset: 'var(--warn)', detumble: 'var(--warn)' };
-    el.textContent = status.toUpperCase();
-    el.style.color = colors[status] || 'var(--muted)';
+function updateSubsysDataStatus(id, status) {
+  const sub = SUBSYSTEMS.find(x => x.id === id);
+  if (sub) {
+    sub.status = status;
+    const statEl = document.getElementById('subsys-status-' + id);
+    if (statEl) { statEl.textContent = status.toUpperCase(); statEl.style.color = getStatusColor(status); }
+  }
+  
+  const gTxt = document.getElementById('global-status-txt');
+  const gDot = document.getElementById('global-dot');
+  
+  if (SUBSYSTEMS.every(s => s.status === 'nominal')) { 
+    gTxt.textContent = 'NOMINAL'; gTxt.style.color = 'var(--text)';
+    gDot.className = 'status-dot green';
+  } else { 
+    gTxt.textContent = 'FAULT DETECTED'; gTxt.style.color = 'var(--warn)'; 
+    gDot.className = 'status-dot amber';
   }
 }
 
-// ===== CONTROLS =====
-function selectSubsys(id) {
-  simState.activeSubsys = id;
-  buildSubsysGrid();
-  buildDetailPanel(id);
-}
+function triggerEclipse() { simState.inEclipse = true; updateSubsysDataStatus('eps', 'warning'); }
+function triggerBitFlip() { simState.obcReset = true; updateSubsysDataStatus('obc', 'reset'); }
+function triggerTumble() { simState.tumbling = true; simState.frameCount = 0; updateSubsysDataStatus('adcs', 'detumble'); }
+function triggerAntennaFail() { simState.antennaFail = true; updateSubsysDataStatus('comms', 'fault'); }
+function triggerThermal() { simState.thermalRunaway = true; simState.internalTemp = 18.0; updateSubsysDataStatus('thermal', 'critical'); }
 
+function selectSubsys(id) { simState.activeSubsys = id; buildSubsysGrid(); buildDetailPanel(id); }
 function updateParam(id, val, unit) {
-  simState.params[id] = parseFloat(val);
-  const el = document.getElementById('pval-' + id);
-  if (el) {
-    const display = parseFloat(val) % 1 === 0 ? val : parseFloat(val).toFixed(2);
-    el.textContent = display + ' ' + unit;
-  }
-  updateMetrics();
+  simState.params[id] = parseFloat(val); const display = parseFloat(val) % 1 === 0 ? val : parseFloat(val).toFixed(2);
+  setText('pval-' + id, display + ' ' + unit); buildBudget(); updateMetrics();
 }
 
 function switchTab(tab) {
   simState.activeTab = tab;
-  ['structure', 'power', 'comms'].forEach(t => {
-    const btn = document.querySelector(`.tab-btn:nth-child(${t === 'structure' ? 1 : t === 'power' ? 2 : 3})`);
-    if (btn) btn.className = 'tab-btn' + (t === tab ? ' active' : '');
-  });
-  document.getElementById('cubesatCanvas').style.display = tab === 'structure' ? 'block' : 'none';
-  document.getElementById('powerCanvas').style.display = tab === 'power' ? 'block' : 'none';
-  document.getElementById('commsCanvas').style.display = tab === 'comms' ? 'block' : 'none';
-
-  const titles = { structure: '// CubeSat Structure — 3U Form Factor', power: '// Power Flow Diagram — EPS Distribution', comms: '// Communications Link Budget' };
-  document.getElementById('vis-title').textContent = titles[tab];
-
-  const showVisBtns = tab === 'structure';
-  document.getElementById('btn-animate').style.display = showVisBtns ? '' : 'none';
-  document.getElementById('btn-explode').style.display = showVisBtns ? '' : 'none';
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.className = 'tab-btn' + (['structure','power','comms'][i] === tab ? ' active' : ''));
+  ['cubesatCanvas', 'powerCanvas', 'commsCanvas'].forEach((id,i) => document.getElementById(id).style.display = ['structure','power','comms'][i] === tab ? 'block' : 'none');
+  
+  const explainers = {
+    structure: "Interactive 3D model of the CubeSat. Use the controls to rotate or explode the view to see the internal subsystem stack. Notice how failures affect the physical render dynamically.",
+    power: "Real-time electrical power flow. Generated solar power flows into the EPS. Watch how eclipse scenarios cut solar generation and drain the battery or cause nodes to drop.",
+    comms: "UHF Communications Link Budget. This illustrates the transmission path. A positive link margin ensures reliable downlink. Antenna failures directly tank the signal margin."
+  };
+  
+  setText('vis-title', { structure: '// Structure', power: '// EPS Power Distribution', comms: '// UHF Link Budget' }[tab]);
+  document.getElementById('vis-explainer').textContent = explainers[tab];
+  document.getElementById('btn-animate').style.display = tab === 'structure' ? '' : 'none';
+  document.getElementById('btn-explode').style.display = tab === 'structure' ? '' : 'none';
 }
 
-function toggleAnimate() {
-  simState.animating = !simState.animating;
-  const btn = document.getElementById('btn-animate');
-  btn.textContent = simState.animating ? 'Rotating' : 'Paused';
-  btn.className = 'vis-btn' + (simState.animating ? ' active' : '');
-}
+function toggleAnimate() { simState.animating = !simState.animating; const b = document.getElementById('btn-animate'); b.textContent = simState.animating ? 'Rotating' : 'Paused'; b.className = 'vis-btn' + (simState.animating ? ' active' : ''); }
+function toggleExplode() { simState.exploded = !simState.exploded; const b = document.getElementById('btn-explode'); b.textContent = simState.exploded ? 'Exploded' : 'Explode View'; b.className = 'vis-btn' + (simState.exploded ? ' active' : ''); }
+function resetView() { simState.exploded = false; simState.animating = true; simState.rotAngle = Math.PI / 6; document.getElementById('btn-animate').textContent = 'Rotating'; document.getElementById('btn-animate').className = 'vis-btn active'; document.getElementById('btn-explode').textContent = 'Explode View'; document.getElementById('btn-explode').className = 'vis-btn'; }
 
-function toggleExplode() {
-  simState.exploded = !simState.exploded;
-  const btn = document.getElementById('btn-explode');
-  btn.textContent = simState.exploded ? 'Exploded' : 'Explode View';
-  btn.className = 'vis-btn' + (simState.exploded ? ' active' : '');
-  addLog('info', simState.exploded ? 'Structure: Explode view enabled — showing subsystem layers.' : 'Structure: Returning to integrated view.');
-}
-
-function resetView() {
-  simState.exploded = false;
-  simState.animating = true;
-  simState.rotAngle = Math.PI / 6;
-  document.getElementById('btn-animate').textContent = 'Rotating';
-  document.getElementById('btn-animate').className = 'vis-btn active';
-  document.getElementById('btn-explode').textContent = 'Explode View';
-  document.getElementById('btn-explode').className = 'vis-btn';
-}
-
-// ===== INIT =====
-buildSubsysGrid();
-buildDetailPanel('eps');
-buildBudget();
-buildScenarios();
-simLoop();
+// Initialize
+buildBudget(); buildSubsysGrid(); buildDetailPanel('eps'); buildScenarios(); simLoop();
 </script>
 </body>
 </html>
