@@ -661,24 +661,26 @@
     </div>
 
     <div class="control-group">
-      <div class="control-label-row">
-        <div class="control-label">
-          Hohmann Transfer
-          <button class="info-btn" tabindex="-1">i
-            <div class="tooltip">
-              <strong style="color:var(--accent)">Hohmann Transfer Orbit</strong><br><br>
-              The most fuel-efficient way to move between two circular orbits. It uses two engine burns: the first burn creates an ellipse that just touches the target orbit; the second circularizes at the target. Conceived by Walter Hohmann in 1925.
-            </div>
-          </button>
+  <div class="control-label-row">
+    <div class="control-label">
+      Hohmann Transfer
+      <button class="info-btn" tabindex="-1">i
+        <!-- Added "tooltip-up" class here -->
+        <div class="tooltip tooltip-up">
+          <strong style="color:var(--accent)">Hohmann Transfer Orbit</strong><br><br>
+          The most fuel-efficient way to move between two circular orbits. It uses two engine burns: the first burn creates an ellipse that just touches the target orbit; the second circularizes at the target. Conceived by Walter Hohmann in 1925.
         </div>
-      </div>
-      <input type="range" id="target-alt" min="200" max="36000" value="2000" step="100">
-      <div class="control-label-row" style="margin-top:0.3rem">
-        <span style="font-size:0.75rem; color:var(--muted)">Target altitude</span>
-        <span class="control-value" id="target-display">2,000 km</span>
-      </div>
-      <button class="hohmann-btn" id="hohmann-btn" onclick="triggerHohmann()">▶ Simulate Transfer</button>
+      </button>
     </div>
+  </div>
+  <input type="range" id="target-alt" min="200" max="36000" value="2000" step="100">
+  <div class="control-label-row" style="margin-top:0.3rem">
+    <span style="font-size:0.75rem; color:var(--muted)">Target altitude</span>
+    <span class="control-value" id="target-display">2,000 km</span>
+  </div>
+  <button class="hohmann-btn" id="hohmann-btn" onclick="triggerHohmann()">▶ Simulate Transfer</button>
+</div>
+
 
     <div class="readouts">
       <div class="readout-title">// Live Telemetry</div>
