@@ -318,6 +318,24 @@ h2 {
   display: block;
 }
 
+/* Modifier to make bottom tooltips pop upwards */
+.info-btn .tooltip.tooltip-up {
+  top: auto;
+  bottom: 140%; 
+  left: -80px; /* Shifts the box left so it doesn't clip off-screen */
+  transform: none;
+}
+
+.info-btn .tooltip.tooltip-up::before {
+  top: 100%; /* Moves the arrow to the bottom of the tooltip */
+  left: 84px; /* Aligns the arrow horizontally with the 'i' button */
+  transform: none;
+  border: 5px solid transparent;
+  border-top-color: var(--accent); /* Makes the arrow point down */
+  border-bottom: none;
+}
+
+
 .module-card:hover{
   border-color:var(--accent);
   transform:translateY(-5px);
