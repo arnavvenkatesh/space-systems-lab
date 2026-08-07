@@ -1094,33 +1094,41 @@ function downloadCertificate() {
   const cv = document.getElementById('render-canvas'); 
   const ctx = cv.getContext('2d');
   
-  // Render High Quality PNG Image Context
-  ctx.fillStyle = '#0c0f18'; ctx.fillRect(0, 0, 800, 600);
-  ctx.strokeStyle = '#00d4aa'; ctx.lineWidth = 10; ctx.strokeRect(20, 20, 760, 560);
-  ctx.strokeStyle = '#3b7eff'; ctx.lineWidth = 2; ctx.strokeRect(35, 35, 730, 530);
-  
-  ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center';
-  ctx.font = 'bold 36px sans-serif'; ctx.fillText('SPACE SYSTEMS LABORATORY', 400, 120);
-  ctx.fillStyle = '#00d4aa'; ctx.font = '28px monospace'; ctx.fillText('CERTIFICATE OF COMPLETION', 400, 180);
-  
-  ctx.fillStyle = '#c8d4e8'; ctx.font = '20px sans-serif'; ctx.fillText('This certifies that', 400, 280);
-  ctx.fillStyle = '#f59e0b'; ctx.font = 'bold 48px sans-serif'; ctx.fillText(name.toUpperCase(), 400, 350);
-  
-  ctx.fillStyle = '#c8d4e8'; ctx.font = '18px sans-serif';
-  ctx.fillText('Has successfully mastered the principles of Orbital Mechanics,', 400, 420);
-  ctx.fillText('Attitude Control, and CubeSat System Design.', 400, 450);
-  
-  ctx.fillStyle = '#3b7eff'; ctx.font = 'italic 24px serif'; ctx.fillText('Arnav Venkatesh', 400, 530);
-  ctx.fillStyle = '#4a5568'; ctx.font = '14px monospace'; ctx.fillText('Designer SSL & CubeSat Systems Researcher', 400, 550);
-  
-  // Trigger Browser Download
-  const a = document.createElement('a'); 
-  a.href = cv.toDataURL('image/png'); 
-  a.download = `SSL_Certificate_${name.replace(/\s+/g,'_')}.png`; 
-  a.click();
-  
-  // Redirect to custom URL
-  setTimeout(() => { window.location.href = 'https://arnavvenkatesh.com/space-systems-lab/index.html'; }, 1000);
+  const templateImg = new Image();
+  // Relative filename for GitHub hosting in the same repository
+  templateImg.src = 'blank-cert.png'; 
+
+  templateImg.onload = function() {
+    // Canvas dimensions automatically adjust to the image resolution
+    cv.width = templateImg.width;
+    cv.height = templateImg.height;
+
+    // Draw the blank certificate background
+    ctx.drawImage(templateImg, 0, 0, cv.width, cv.height);
+
+    // Styling for the dynamic participant name
+    ctx.fillStyle = '#ffffff'; 
+    ctx.textAlign = 'center';  
+    ctx.font = 'bold 72px Arial, sans-serif'; 
+
+    // --- YOUR EXACT TARGET COORDINATES ---
+    // Width / 2 always finds the precise horizontal center for any resolution.
+    const textX = cv.width / 2;
+    // ADJUST textY AFTER DESIGNING YOUR TEMPLATE IN CANVA
+    const textY = 350; 
+    
+    // Draw the participant's name
+    ctx.fillText(name.toUpperCase(), textX, textY);
+
+    // Create the image URL and trigger the download
+    const a = document.createElement('a'); 
+    a.href = cv.toDataURL('image/png'); 
+    a.download = `SSL_Certificate_${name.replace(/\s+/g,'_')}.png`; 
+    a.click();
+    
+    // Redirect back to the modules page after downloading
+    setTimeout(() => { window.location.href = 'https://arnavvenkatesh.com/space-systems-lab/index.html'; }, 1000);
+  };
 }
 
 // Background loop for animation canvases
