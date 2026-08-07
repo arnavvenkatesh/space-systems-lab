@@ -22,6 +22,7 @@
       --font: 'Outfit', sans-serif;
       --mono: 'Space Mono', monospace;
     }
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
 
@@ -147,6 +148,7 @@
       padding: 1.5rem;
       position: sticky;
       top: 80px;
+      z-index: 10;
     }
 
     .panel-title {
@@ -213,17 +215,18 @@
       border: 1px solid var(--accent);
       border-radius: 8px;
       padding: 0.9rem 1rem;
-      width: 220px;
+      width: 230px;
       font-size: 0.78rem;
       color: var(--text);
       line-height: 1.6;
-      z-index: 300;
+      z-index: 400;
       pointer-events: none;
       opacity: 0;
       transition: opacity 0.2s;
       font-family: var(--font);
       font-weight: 400;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+      text-align: left;
     }
 
     .info-btn .tooltip::before {
@@ -660,26 +663,24 @@
     </div>
 
     <div class="control-group">
-  <div class="control-label-row">
-    <div class="control-label">
-      Hohmann Transfer
-      <button class="info-btn" tabindex="-1">i
-        <!-- Added "tooltip-up" class here -->
-        <div class="tooltip tooltip-up">
-          <strong style="color:var(--accent)">Hohmann Transfer Orbit</strong><br><br>
-          The most fuel-efficient way to move between two circular orbits. It uses two engine burns: the first burn creates an ellipse that just touches the target orbit; the second circularizes at the target. Conceived by Walter Hohmann in 1925.
+      <div class="control-label-row">
+        <div class="control-label">
+          Hohmann Transfer
+          <button class="info-btn" tabindex="-1">i
+            <div class="tooltip">
+              <strong style="color:var(--accent)">Hohmann Transfer Orbit</strong><br><br>
+              The most fuel-efficient way to move between two circular orbits. It uses two engine burns: the first burn creates an ellipse that just touches the target orbit; the second circularizes at the target. Conceived by Walter Hohmann in 1925.
+            </div>
+          </button>
         </div>
-      </button>
+      </div>
+      <input type="range" id="target-alt" min="200" max="36000" value="2000" step="100">
+      <div class="control-label-row" style="margin-top:0.3rem">
+        <span style="font-size:0.75rem; color:var(--muted)">Target altitude</span>
+        <span class="control-value" id="target-display">2,000 km</span>
+      </div>
+      <button class="hohmann-btn" id="hohmann-btn" onclick="triggerHohmann()">▶ Simulate Transfer</button>
     </div>
-  </div>
-  <input type="range" id="target-alt" min="200" max="36000" value="2000" step="100">
-  <div class="control-label-row" style="margin-top:0.3rem">
-    <span style="font-size:0.75rem; color:var(--muted)">Target altitude</span>
-    <span class="control-value" id="target-display">2,000 km</span>
-  </div>
-  <button class="hohmann-btn" id="hohmann-btn" onclick="triggerHohmann()">▶ Simulate Transfer</button>
-</div>
-
 
     <div class="readouts">
       <div class="readout-title">// Live Telemetry</div>
