@@ -47,26 +47,17 @@
     }
     .nav-logo { font-family: var(--mono); font-size: 1rem; color: var(--white); letter-spacing: 2px; }
     .nav-logo span { color: var(--accent); }
+    .nav-breadcrumb { font-size: 0.8rem; color: var(--muted); }
+    .nav-breadcrumb a { color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    .nav-breadcrumb a:hover { color: var(--accent); }
     .nav-breadcrumb .sep { margin: 0 0.5rem; }
     
-    .nav-right a {
-      font-size: 0.82rem; color: var(--muted); text-decoration: none;
-      border: 1px solid var(--border); padding: 0.35rem 0.9rem;
-      border-radius: 4px; transition: color 0.2s, border-color 0.2s;
-    }
-    .nav-right a:hover { color: var(--accent); border-color: var(--accent); }
-    
     .module-header { 
-      padding: 1.5rem 1.5rem 1rem; max-width: 1400px; margin: 0 auto; width: 100%; 
-      flex-shrink: 0;
+      padding: 0.75rem 1.5rem; max-width: 1400px; margin: 0 auto; width: 100%; 
+      flex-shrink: 0; display: flex; align-items: center; gap: 15px;
     }
-    .module-tag { 
-      font-family: var(--mono); font-size: 0.7rem; color: var(--accent); 
-      letter-spacing: 3px; text-transform: uppercase; display: block; margin-bottom: 0.5rem; 
-    }
-    .module-header h1 { font-size: 1.8rem; font-weight: 800; color: var(--white); letter-spacing: -1px; margin-bottom: 0.25rem; }
-    .module-header p { color: var(--muted); font-size: 0.85rem; max-width: 800px; margin-bottom: 0;}
-
+    .module-header h1 { font-size: 1.6rem; font-weight: 800; color: var(--white); letter-spacing: -1px; margin-bottom: 0; }
+    .module-header p { color: var(--muted); font-size: 0.82rem; max-width: 800px; margin-bottom: 0;}
     
     /* MAIN LAYOUT */
     .main-layout {
@@ -281,12 +272,13 @@
     <span>03 — CubeSat Systems</span>
   </div>
   <div class="nav-right">
-    <a href="modules.html">← Back to Modules</a>
+    <a href="modules.html" style="font-size: 0.82rem; color: var(--muted); text-decoration: none; border: 1px solid var(--border); padding: 0.35rem 0.9rem; border-radius: 4px; transition: color 0.2s, border-color 0.2s;">← Back to Modules</a>
   </div>
 </nav>
 
-<div class="module-header">
-  <h1>CubeSat Systems</h1>
+<div class="module-header" style="display: block; padding: 1.5rem 1.5rem 1rem;">
+  <span class="module-tag" style="font-family: var(--mono); font-size: 0.7rem; color: var(--accent); letter-spacing: 3px; text-transform: uppercase; display: block; margin-bottom: 0.5rem;">Module 03</span>
+  <h1 style="font-size: 1.8rem; margin-bottom: 0.25rem;">CubeSat Systems</h1>
   <p>Tune parameters and arm failure scenarios. Keep dynamic power below 8.0W and prevent temperatures from exceeding 60.0°C. Survive 60 seconds.</p>
 </div>
 
