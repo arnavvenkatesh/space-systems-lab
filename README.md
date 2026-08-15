@@ -2,7 +2,7 @@
 
 An open-source, interactive website for learning spacecraft engineering — orbital mechanics, attitude control, CubeSat systems, and mission design — built for students, educators, and anyone curious about how satellites actually work.
 
-**Live site:** [https://arnavvenkatesh.com/space-systems-lab/](https://arnavvenkatesh.com/index.html)
+**Live site:** https://arnavvenkatesh.com/index.html
 
 ## What's inside
 
