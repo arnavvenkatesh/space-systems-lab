@@ -9,6 +9,68 @@
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet"/>
 
+<style>
+.feedback-form-wrap {
+  margin-top: 3rem;
+  padding: 2.5rem;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+}
+
+.feedback-form-intro {
+  margin: 0 0 1.5rem;
+  font-size: 1.05rem;
+}
+
+#feedback-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-width: 480px;
+}
+
+#feedback-form label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-size: 0.85rem;
+  opacity: 0.75;
+}
+
+#feedback-form textarea,
+#feedback-form input[type="text"]:not([name="_gotcha"]) {
+  width: 100%;
+  padding: 0.7rem 0.9rem;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  color: inherit;
+  font-family: inherit;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+}
+
+#feedback-form textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+#feedback-form textarea:focus,
+#feedback-form input:focus {
+  outline: none;
+  border-color: #6ee7b7;
+}
+
+#feedback-form button {
+  align-self: flex-start;
+  margin-top: 0.5rem;
+}
+
+#fb-error {
+  margin-top: -0.5rem;
+}
+</style>
+
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-XKVGCZCJD2"></script>
 <script>
@@ -92,6 +154,24 @@
 </div>
 </div>
 
+<!-- OPEN SOURCE -->
+
+<div class="github-section">
+
+<div class="section-label">Open Source</div>
+
+<h2>Everything Is Public</h2>
+
+<p>
+All curriculum materials, source code, and educational resources are freely available on GitHub. Space Systems Lab is developed as an open educational resource that anyone can study, improve, or build upon.
+</p>
+
+<a class="btn-primary" href="https://github.com/arnavvenkatesh/space-systems-lab" target="_blank">
+View on GitHub ↗
+</a>
+
+</div>
+
 <!----Form Stuff---->
 <div class="feedback-form-wrap">
   <p class="feedback-form-intro">Have feedback of your own? Share it below.</p>
@@ -113,24 +193,6 @@
     <button class="btn-primary" type="submit">Send Feedback</button>
     <span id="fb-error" style="display:none; color:#c0392b; font-size:0.85em;"></span>
   </form>
-</div>
-
-<!-- OPEN SOURCE -->
-
-<div class="github-section">
-
-<div class="section-label">Open Source</div>
-
-<h2>Everything Is Public</h2>
-
-<p>
-All curriculum materials, source code, and educational resources are freely available on GitHub. Space Systems Lab is developed as an open educational resource that anyone can study, improve, or build upon.
-</p>
-
-<a class="btn-primary" href="https://github.com/arnavvenkatesh/space-systems-lab" target="_blank">
-View on GitHub ↗
-</a>
-
 </div>
 
 </div>
