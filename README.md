@@ -21,17 +21,6 @@ Complete all four modules and you can generate and download a personal completio
 
 Plain HTML5, CSS, and JavaScript: no frameworks, no build step. All simulations run on the HTML5 Canvas with physics computed directly in-browser.
 
-## Running locally
-
-No installation or dependencies needed. Clone the repo and open `index.html` in any browser:
-
-```bash
-git clone https://github.com/arnavvenkatesh/space-systems-lab.git
-cd space-systems-lab
-open index.html
-```
-
-(Or just double-click `index.html` — everything runs client-side.)
 
 ## Contributing
 
