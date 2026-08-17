@@ -92,6 +92,29 @@
 </div>
 </div>
 
+<!----Form Stuff---->
+<div class="feedback-form-wrap">
+  <p class="feedback-form-intro">Have feedback of your own? Share it below.</p>
+
+  <div data-fs-success style="display:none;"></div>
+
+  <form id="feedback-form">
+    <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off">
+
+    <label for="fb-quote">Your feedback (30 words max)</label>
+    <textarea id="fb-quote" name="quote" required></textarea>
+
+    <label for="fb-role">Role (e.g. "Grade 12 Student - NHVPS B'lore")</label>
+    <input id="fb-role" name="role" type="text" required/>
+
+    <label for="fb-name">Name (optional)</label>
+    <input id="fb-name" name="name" type="text"/>
+
+    <button class="btn-primary" type="submit">Send Feedback</button>
+    <span id="fb-error" style="display:none; color:#c0392b; font-size:0.85em;"></span>
+  </form>
+</div>
+
 <!-- OPEN SOURCE -->
 
 <div class="github-section">
@@ -144,6 +167,44 @@ By Arnav Venkatesh · 2026 · MIT License
 </div>
 
 </footer>
+
+<script>
+(function(){
+  const form = document.getElementById('feedback-form');
+  const successMsg = document.querySelector('[data-fs-success]');
+  const errorMsg = document.getElementById('fb-error');
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+
+    const wordCount = form.quote.value.trim().split(/\s+/).filter(Boolean).length;
+    if (wordCount > 30) {
+      errorMsg.textContent = 'Please keep your feedback to 30 words or fewer.';
+      errorMsg.style.display = 'block';
+      return;
+    }
+    errorMsg.style.display = 'none';
+
+    fetch('https://formspree.io/f/xbgrzana', {
+      method: 'POST',
+      headers: { 'Accept': 'application/json' },
+      body: new FormData(form)
+    }).then(response => {
+      if (response.ok) {
+        form.style.display = 'none';
+        successMsg.textContent = 'Thanks for your feedback!';
+        successMsg.style.display = 'block';
+      } else {
+        errorMsg.textContent = 'Something went wrong — please try again.';
+        errorMsg.style.display = 'block';
+      }
+    }).catch(() => {
+      errorMsg.textContent = 'Something went wrong — please try again.';
+      errorMsg.style.display = 'block';
+    });
+  });
+})();
+</script>
 
 <script src="script.js"></script>
 
