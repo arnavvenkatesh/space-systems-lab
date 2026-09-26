@@ -1,3 +1,5 @@
+[![WebsiteHits](https://hits.sh/arnavvenkatesh.com.svg?extraCount=225&color=2563eb)](https://hits.sh/arnavvenkatesh.com/)
+
 # Space Systems Lab
 
 An open-source, interactive website for learning spacecraft engineering — orbital mechanics, attitude control, CubeSat systems, and mission design — built for students, educators, and anyone curious about how satellites actually work.
